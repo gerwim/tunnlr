@@ -1,0 +1,55 @@
+﻿@using Tunnlr.Common.Protobuf
+@using Tunnlr.Client.Core.Services
+@inherits LayoutComponentBase
+@inject GeneralService GeneralService
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(_ => DrawerToggle())" />
+        <MudSpacer />
+        @if (_updateStatus is not null and not UpdateStatus.Ok)
+        {
+            switch (_updateStatus)
+            {
+                case UpdateStatus.UpdateRequired: 
+                case UpdateStatus.Unsupported: 
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Filled">Your client version is not supported. Please download the latest version from <a href="https://github.com/gerwim/tunnlr/releases" target="_blank" rel="noopener">GitHub</a>.</MudAlert>
+                    break;
+                case UpdateStatus.UpdateAvailable: 
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Filled">A new client version is available on <a href="https://github.com/gerwim/tunnlr/releases" target="_blank" rel="noopener">GitHub</a>.</MudAlert>
+                    break;
+            }
+        }
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/gerwim/tunnlr" Target="_blank" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Tunnlr</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+    UpdateStatus? _updateStatus;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _updateStatus = await GeneralService.CheckUpdateStatus();
+    }
+
+}

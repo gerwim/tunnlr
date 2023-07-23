@@ -1,0 +1,67 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Tunnlr.Common.Protobuf";
+
+package requests;
+
+service Requests {
+    rpc CreateRequestStream (stream ClientMessage) returns (stream ServerMessage);
+}
+
+
+message ClientMessage {
+    oneof data {
+        RequestStreamCreated requestStreamCreated = 1;
+        HttpResponse httpResponse = 2;
+        ChunkedMessage chunkedMessage = 3;
+        HttpRequestFinished httpRequestFinished = 4;
+    }
+}
+
+message RequestStreamCreated {
+    string requestId = 1;
+    bytes securityKey = 2;
+    string servedFrom = 3;
+}
+
+message ServerMessage {
+    oneof data {
+        HttpRequest httpRequest = 1;
+        ChunkedMessage chunkedMessage = 2;
+        HttpRequestFinished httpRequestFinished = 3;
+    }
+}
+
+message HttpRequest {
+    string id = 1;
+    HttpMethod httpMethod = 2;
+    string targetUri = 3;
+    map<string, string> headers = 4;
+}
+
+message HttpResponse {
+    HttpMethod httpMethod = 1;
+    string httpRequestId = 2;
+    int32 statusCode = 3;
+    map<string, string> headers = 4;
+}
+
+message ChunkedMessage {
+    string httpRequestId = 1;
+    bytes chunk = 2;
+}
+
+message HttpRequestFinished {
+    string requestId = 1;
+}
+
+enum HttpMethod {
+    UNKNOWN = 0;
+    HEAD = 1;
+    OPTIONS = 2;
+    GET = 3;
+    POST = 4;
+    DELETE = 5;
+    PUT = 6;
+    TRACE = 7;
+}

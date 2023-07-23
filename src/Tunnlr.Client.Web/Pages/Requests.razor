@@ -1,0 +1,104 @@
+﻿@page "/tunnels/{id:guid}/requests"
+@using Tunnlr.Client.Core.Models
+@using Tunnlr.Client.Core.Services
+@using Tunnlr.Client.Core.Helpers
+@implements IDisposable
+
+<PageTitle>Tunnlr</PageTitle>
+<MudContainer MaxWidth="MaxWidth.False" Class="my-16 pt-16">
+
+    <h3>Requests</h3>
+
+    @if (Tunnel is null)
+    {
+        <div>
+            <p>Tunnel is not active.</p>
+        </div>
+        
+        return;
+    }
+
+    <MudStack Row="true" Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Stretch">
+        <MudPaper Class="pe-4" Width="50%" MaxWidth="50%">
+            <MudList Clickable="true" @bind-SelectedValue="selectedValue" Color="Color.Primary">
+                @foreach (var tunnelHttpRequest in Tunnel.Requests.OrderByDescending(x => x.Key.DateTime))
+                {
+                    <MudListItem Text="@($"{tunnelHttpRequest.Key.HttpRequest.HttpMethod} {new Uri(tunnelHttpRequest.Key.HttpRequest.TargetUri).PathAndQuery}")" Value="tunnelHttpRequest.Key" />
+                }
+            </MudList>
+        </MudPaper>
+        @if (selectedValue is Request request && Tunnel.Requests.TryGetValue(request, out var response))
+        {
+            <MudPaper Class="pe-4" Width="50%" MaxWidth="50%">
+                <h2>@request.HttpRequest.HttpMethod @(new Uri(request.HttpRequest.TargetUri).PathAndQuery)</h2>
+                <MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                    <MudTabPanel Text="Request headers">
+                        <MudSimpleTable Dense Hover Style="overflow-x: auto;">
+                            <tbody>
+                            @foreach (var row in request.HttpRequest.Headers)
+                            {
+                                <tr>
+                                    <td><b>@row.Key</b></td>
+                                    <td>@row.Value</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </MudSimpleTable>
+                    </MudTabPanel>
+                    <MudTabPanel Text="Request body">
+                        <pre style="overflow-x: auto; white-space: pre-wrap;"><code>@request.Body.ToArray().GetBody(request.HttpRequest.Headers)</code></pre>
+                    </MudTabPanel>
+                </MudTabs>
+                @if (response is not null)
+                {
+                    <h2>Statuscode: @response.HttpResponse.StatusCode</h2>
+                    <MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                        <MudTabPanel Text="Response headers">
+                            <MudSimpleTable Dense Hover Style="overflow-x: auto;">
+                                <tbody>
+                                @foreach (var row in response.HttpResponse.Headers)
+                                {
+                                    <tr>
+                                        <td><b>@row.Key</b></td>
+                                        <td>@row.Value</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </MudSimpleTable>
+                        </MudTabPanel>
+                        <MudTabPanel Text="Response body">
+                            <pre style="overflow-x: auto; white-space: pre-wrap;"><code>@response.Body.ToArray().GetBody(response.HttpResponse.Headers)</code></pre>
+                        </MudTabPanel>
+                    </MudTabs>
+                }
+            </MudPaper>
+        }
+    </MudStack>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    public Tunnel? Tunnel { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        Tunnel = TunnelService.ActiveTunnels.FirstOrDefault(x => x.Key == Id).Value;
+        if (Tunnel is not null) Tunnel.ChangedEvent += OnTunnelStateChange;
+
+        return Task.CompletedTask;
+    }
+
+    object? selectedValue;
+    
+    private void OnTunnelStateChange(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        if (Tunnel is not null) Tunnel.ChangedEvent -= OnTunnelStateChange;
+    }
+}

@@ -1,0 +1,36 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Tunnlr.Common.Protobuf";
+
+package tunnels;
+
+service Tunnels {
+    rpc CreateTunnelStream (stream CreateTunnelStreamRequest) returns (stream CreateTunnelStreamResponse);
+}
+
+message CreateTunnelStreamRequest {
+    oneof data {
+        StartTunnelRequest startTunnelRequest = 1;
+    }
+}
+
+message CreateTunnelStreamResponse {
+    oneof data {
+        StartTunnelResponse startTunnelResponse = 1;
+        OpenRequestStream openRequestStream = 2;
+    }
+}
+
+message OpenRequestStream {
+    string requestId = 1;
+    string servedFrom = 2;
+}
+
+message StartTunnelRequest {
+    string targetHost = 1;
+}
+
+message StartTunnelResponse {
+    string servedFrom = 1;
+    bytes securityKey = 2;
+}

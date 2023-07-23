@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Tunnlr.Common.Protobuf";
+
+package general;
+
+service General {
+    rpc ValidateServerVersion (ValidateServerRequest) returns (ValidateServerResponse);
+}
+
+message ValidateServerRequest {
+    string clientVersion = 1;
+}
+
+message ValidateServerResponse {
+    UpdateStatus updateStatus = 1;
+}
+
+enum UpdateStatus {
+    UNKNOWN = 0;
+    OK = 1;
+    UNSUPPORTED = 2;
+    UPDATE_AVAILABLE = 3;
+    UPDATE_REQUIRED = 4;
+}
