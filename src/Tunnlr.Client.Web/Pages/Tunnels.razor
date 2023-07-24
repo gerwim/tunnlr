@@ -40,7 +40,7 @@
     }
     else
     {
-        <AddTunnel OnUpdate="Refresh" />   
+        <AddTunnel OnUpdate="LoadData" />   
     }
 
 </MudContainer>
@@ -49,7 +49,7 @@
     private bool _loading = true;
     private bool _showCreateTunnel;
 
-    private void Refresh()
+    private void LoadData()
     {
         _tunnels = DbContext.Tunnels.ToList().Select(x =>
         {
@@ -57,10 +57,10 @@
 
             if (activeTunnel is not null)
             {
-                activeTunnel.ChangedEvent += OnTunnelStateChange;
+                activeTunnel.ChangedEvent += OnRequestsChange;
                 return activeTunnel;
             }
-            
+
             return new Tunnel
             {
                 TunnelId = x.Id,
@@ -71,7 +71,7 @@
 
         _showCreateTunnel = false;
         _loading = false;
-        
+
         StateHasChanged();
     }
 
@@ -84,13 +84,13 @@
             DbContext.SaveChanges();
         }
         
-        Refresh();
+        LoadData();
     }
 
     protected override void OnInitialized()
     {
         TunnelService.ChangedEvent += OnTunnelStateChange;
-        Refresh();
+        LoadData();
     }
 
     private List<Tunnel> _tunnels = new();
@@ -120,7 +120,12 @@
 
     private void OnTunnelStateChange(object? sender, EventArgs e)
     {
-        InvokeAsync(Refresh);
+        InvokeAsync(LoadData);
+    }
+    
+    private void OnRequestsChange(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
@@ -128,7 +133,7 @@
         TunnelService.ChangedEvent -= OnTunnelStateChange;
         foreach (var tunnel in _tunnels)
         {
-            tunnel.ChangedEvent -= OnTunnelStateChange;
+            tunnel.ChangedEvent -= OnRequestsChange;
         }
     } 
 }
