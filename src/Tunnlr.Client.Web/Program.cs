@@ -15,9 +15,9 @@ StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configurat
 // Configure DbContext
 builder.Services.AddDbContext<TunnlrDbContext>(options =>
 {
-    // Create a custom connection string for each Sqlite database since Sqlite does not support schemas
-    var connectionStringBuilder = new SqliteConnectionStringBuilder("Data Source=Tunnlr.Client.Web.db");
-            
+    var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tunnlr");
+    Directory.CreateDirectory(directory);
+    var connectionStringBuilder = new SqliteConnectionStringBuilder($"Data Source={Path.Combine(directory, "Tunnlr.Client.Web.db")}"); 
     options.UseSqlite(connectionStringBuilder.ToString(), sqliteOptions =>
     {
         sqliteOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SingleQuery);
