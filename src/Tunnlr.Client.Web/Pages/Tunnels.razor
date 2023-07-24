@@ -26,7 +26,7 @@
                 <MudToggleIconButton Toggled="@(context.Status == TunnelStatus.Started)"
                                      ToggledChanged="() => StartOrStopTunnel(context)"
                                      Icon="@Icons.Material.Filled.Start" Color="@Color.Success" Title="Start"
-                                     ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="@Color.Error" ToggledTitle="Stopped"/>
+                                     ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="@Color.Error" ToggledTitle="Stop"/>
                 
                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                OnClick="() => DeleteTunnel(context)"
