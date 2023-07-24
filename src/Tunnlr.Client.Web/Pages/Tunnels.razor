@@ -75,13 +75,15 @@
         StateHasChanged();
     }
 
-    private void DeleteTunnel(Tunnel tunnel)
+    private async Task DeleteTunnel(Tunnel tunnel)
     {
-        var dbTunnel = DbContext.Tunnels.Find(tunnel.TunnelId);
+        if (tunnel.Status is not TunnelStatus.Stopped) await DestroyTunnel(tunnel);
+        
+        var dbTunnel = await DbContext.Tunnels.FindAsync(tunnel.TunnelId);
         if (dbTunnel is not null)
         {
             DbContext.Tunnels.Remove(dbTunnel);
-            DbContext.SaveChanges();
+            await DbContext.SaveChangesAsync();
         }
         
         LoadData();
