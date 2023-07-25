@@ -16,6 +16,7 @@ fn main() -> wry::Result<()> {
     let proxy = event_loop.create_proxy();
     let window = WindowBuilder::new()
         .with_title("Tunnlr")
+        .with_maximized(true)
         .build(&event_loop)?;
 
     print!("Hi");
