@@ -6,6 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+open = "5.0.0"
 wry = "0.30.0"
 
 [[bin]]
