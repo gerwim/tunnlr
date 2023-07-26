@@ -1,4 +1,16 @@
+use include_dir::{include_dir, Dir};
+use tempfile::TempDir;
+
+static PROJECT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/include");
+
 fn main() -> wry::Result<()> {
+    let dir = TempDir::new()?;
+    println!("Temporary directory: {}", dir.path().display());
+    let glob = "**/*";
+    for entry in PROJECT_DIR.find(glob).unwrap() {
+        println!("Found {}", entry.path().display());
+    }
+
     use wry::{
         application::{
             event::{Event, StartCause, WindowEvent},
@@ -19,7 +31,6 @@ fn main() -> wry::Result<()> {
         .with_maximized(true)
         .build(&event_loop)?;
 
-    print!("Hi");
     let _webview = WebViewBuilder::new(window)?
         .with_url("http://127.0.0.1:5109")?
         .with_new_window_req_handler(move |uri: String| {
