@@ -1,15 +1,20 @@
-use include_dir::{include_dir, Dir};
-use tempfile::TempDir;
+use std::{path::PathBuf, fs, process::{Command}};
 
-static PROJECT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/include");
+use include_dir::{include_dir, Dir};
+
+static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR/assets");
+static MAIN_APPLICATION: &str = "Tunnlr.Client.Web";
+
 
 fn main() -> wry::Result<()> {
-    let dir = TempDir::new()?;
-    println!("Temporary directory: {}", dir.path().display());
-    let glob = "**/*";
-    for entry in PROJECT_DIR.find(glob).unwrap() {
-        println!("Found {}", entry.path().display());
-    }
+    let temp_dir: PathBuf = std::env::temp_dir().join("Tunnlr");
+    let _ = fs::create_dir(temp_dir.clone());
+    let _ = ASSETS.extract(temp_dir.clone());
+
+    // Start main application
+    let mut command = Command::new(temp_dir.clone().join(MAIN_APPLICATION));
+    command.current_dir(temp_dir.clone());
+    let mut process = command.spawn().unwrap();
 
     use wry::{
         application::{
@@ -53,7 +58,11 @@ fn main() -> wry::Result<()> {
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
-            } => *control_flow = ControlFlow::Exit,
+            } => {
+                *control_flow = ControlFlow::Exit;
+
+                let _ = process.kill();
+            },
             _ => (),
         }
     });

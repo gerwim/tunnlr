@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 include_dir = { version = "^0.7.3", features = ["glob"] }
 open = "5.0.0"
-tempfile = "3.7.0"
 wry = "0.30.0"
 
 [[bin]]
