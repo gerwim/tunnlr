@@ -58,7 +58,8 @@ jobs:
           mv target/release/Tunnlr build/macOS/Contents/MacOS
           cp -R assets/* build/macOS/Contents/MacOS
 
-          mv build/macOS "${release_name}".app
+          mv build/macOS Tunnlr.app
+          tar czvf "${release_name}.tar.gz" Tunnlr.app
 
       - name: Build Tunnlr.Client.Wrapper (Windows)
         shell: bash
