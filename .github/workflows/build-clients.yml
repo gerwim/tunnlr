@@ -42,17 +42,6 @@ jobs:
           # Build everything
           dotnet publish src/Tunnlr.Client.Web --runtime "${{ matrix.target }}" -c Release -o "assets"
 
-          # Pack files
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
-            # Pack to zip for Windows
-            7z a -tzip "${release_name}.zip" "./${release_name}/*"
-          else
-          tar czvf "${release_name}.tar.gz" "$release_name"
-          fi
-
-          # Delete output directory
-          rm -r "$release_name"
-
       - name: Build Tunnlr.Client.Wrapper (MacOS)
         shell: bash
         if: ${{ matrix.target }} == "osx-x64"
