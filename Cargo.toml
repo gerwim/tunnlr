@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 include_dir = { version = "^0.7.3", features = ["glob"] }
 open = "5.0.0"
+reqwest = "0.11.18"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 wry = "0.30.0"
 
 [[bin]]
-name = "Tunnlr_Client_Wrapper"
+name = "Tunnlr"
 path = "src/Tunnlr.Client.Wrapper/main.rs"
