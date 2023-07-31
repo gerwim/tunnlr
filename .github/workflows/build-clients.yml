@@ -54,19 +54,26 @@ jobs:
 
           mv build/macOS "${release_name}".app
 
-      - name: Build Tunnlr.Client.Wrapper (other)
+      - name: Build Tunnlr.Client.Wrapper (Windows)
         shell: bash
-        if: ${{ matrix.target }} != "osx-x64"
+        if: ${{ matrix.target }} == "win-x64"
         run: |
           release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
           cargo build --release
 
-          if [ "${{ matrix.target }}" == "win-x64" ]; then
-            mv target/release/Tunnlr  "${release_name}.exe"
-          else
-            mv target/release/Tunnlr  "${release_name}"
-          fi        
+          mv target/release/Tunnlr  "${release_name}.exe"      
+
+      - name: Build Tunnlr.Client.Wrapper (Linux)
+        shell: bash
+        if: ${{ matrix.target }} == "linux-x64"
+        run: |
+          release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
+
+          sudo apt install build-essential libgtk-3-dev
+          cargo build --release
+
+          mv target/release/Tunnlr  "${release_name}"      
 
       - name: Publish
         uses: softprops/action-gh-release@v1
