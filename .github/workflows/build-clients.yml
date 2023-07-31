@@ -44,7 +44,7 @@ jobs:
 
       - name: Build Tunnlr.Client.Wrapper (MacOS)
         shell: bash
-        if: matrix.target == "osx-x64"
+        if: matrix.target ==  'osx-x64'
         run: |
           release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
@@ -57,7 +57,7 @@ jobs:
 
       - name: Build Tunnlr.Client.Wrapper (Windows)
         shell: bash
-        if: matrix.target == "win-x64"
+        if: matrix.target == 'win-x64'
         run: |
           release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
@@ -67,7 +67,7 @@ jobs:
 
       - name: Build Tunnlr.Client.Wrapper (Linux)
         shell: bash
-        if: matrix.target == "linux-x64"
+        if: matrix.target == 'linux-x64'
         run: |
           release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
