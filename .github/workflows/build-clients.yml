@@ -30,14 +30,17 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 7
+      
+      - name: Setup rust
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Build
         shell: bash
         run: |
-          release_name="Tunnlr.Client.Web-$GITHUB_REF_NAME-${{ matrix.target }}"
+          release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish src/Tunnlr.Client.Web --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish src/Tunnlr.Client.Web --runtime "${{ matrix.target }}" -c Release -o "assets"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then
@@ -50,10 +53,36 @@ jobs:
           # Delete output directory
           rm -r "$release_name"
 
+      - name: Build Tunnlr.Client.Wrapper (MacOS)
+        shell: bash
+        if: ${{ matrix.target }} == "osx-x64"
+        run: |
+          release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
+
+          cargo build --release
+          mv target/release/Tunnlr build/macOS/Contents/MacOS
+          mv -r assets/* build/macOS/Contents/MacOS
+
+          mv build/macOS "${release_name}".app
+
+      - name: Build Tunnlr.Client.Wrapper (other)
+        shell: bash
+        if: ${{ matrix.target }} != "osx-x64"
+        run: |
+          release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
+
+          cargo build --release
+
+          if [ "${{ matrix.target }}" == "win-x64" ]; then
+            mv target/release/Tunnlr  "${release_name}.exe"
+          else
+            mv target/release/Tunnlr  "${release_name}"
+          fi        
+
       - name: Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: "Tunnlr.Client.Web*"
+          files: "Tunnlr-*"
           tag_name: ${{ github.ref_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
