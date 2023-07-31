@@ -1,5 +1,8 @@
 use std::{fs, path::PathBuf, process::Command};
 
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 use include_dir::{include_dir, Dir};
 
 static ASSETS: Dir = include_dir!("$CARGO_MANIFEST_DIR/assets");
@@ -16,6 +19,10 @@ async fn main() -> wry::Result<()> {
 
         // Start main application
         let mut command = Command::new(temp_dir.clone().join(MAIN_APPLICATION));
+        if cfg!(target_os = "windows") {
+            const DETACHED_PROCESS: u32 = 0x00000008;
+            command.creation_flags(DETACHED_PROCESS);
+        }
         command.current_dir(temp_dir.clone());
         tunnlr_process = command.spawn().unwrap();
     } else {
@@ -68,7 +75,7 @@ async fn main() -> wry::Result<()> {
         *control_flow = ControlFlow::Wait;
 
         match event {
-            Event::NewEvents(StartCause::Init) => println!("Wry has started!"),
+            Event::NewEvents(StartCause::Init) => println!("Tunnlr has started!"),
             Event::WindowEvent {
                 event: WindowEvent::CloseRequested,
                 ..
