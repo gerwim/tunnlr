@@ -19,10 +19,11 @@ async fn main() -> wry::Result<()> {
 
         // Start main application
         let mut command = Command::new(temp_dir.clone().join(MAIN_APPLICATION));
-        if cfg!(target_os = "windows") {
+        #[cfg(target_os = "windows")] {
             const DETACHED_PROCESS: u32 = 0x00000008;
             command.creation_flags(DETACHED_PROCESS);
         }
+
         command.current_dir(temp_dir.clone());
         tunnlr_process = command.spawn().unwrap();
     } else {
