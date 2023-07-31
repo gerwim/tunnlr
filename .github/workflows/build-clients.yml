@@ -51,7 +51,7 @@ jobs:
           brew install gtk+3
           cargo build --release
           mv target/release/Tunnlr build/macOS/Contents/MacOS
-          mv -r assets/* build/macOS/Contents/MacOS
+          cp -R assets/* build/macOS/Contents/MacOS
 
           mv build/macOS "${release_name}".app
 
