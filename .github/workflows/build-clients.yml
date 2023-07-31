@@ -42,6 +42,11 @@ jobs:
           # Build everything
           dotnet publish src/Tunnlr.Client.Web --runtime "${{ matrix.target }}" -c Release -o "assets"
 
+          # Pack files for Linux
+          if [ "${{ matrix.target }}" == "linux-x64" ]; then
+            tar czvf "${release_name}.tar.gz" "assets"
+          fi
+
       - name: Build Tunnlr.Client.Wrapper (MacOS)
         shell: bash
         if: matrix.target ==  'osx-x64'
@@ -64,17 +69,6 @@ jobs:
           cargo build --release
 
           mv target/release/Tunnlr  "${release_name}.exe"      
-
-      - name: Build Tunnlr.Client.Wrapper (Linux)
-        shell: bash
-        if: matrix.target == 'linux-x64'
-        run: |
-          release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
-
-          sudo apt install build-essential libgtk-3-dev libsoup-3.0-dev libssl-dev libjavascriptcoregtk-4.1-dev libwebkit2gtk-4.1-dev
-          cargo build --release
-
-          mv target/release/Tunnlr  "${release_name}"      
 
       - name: Publish
         uses: softprops/action-gh-release@v1
