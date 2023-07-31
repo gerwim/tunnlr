@@ -71,7 +71,7 @@ jobs:
         run: |
           release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
-          sudo apt install build-essential libgtk-3-dev libsoup-3.0-dev
+          sudo apt install build-essential libgtk-3-dev libsoup-3.0-dev libssl-dev libjavascriptcoregtk-4.1-dev libwebkit2gtk-4.1-dev
           cargo build --release
 
           mv target/release/Tunnlr  "${release_name}"      
