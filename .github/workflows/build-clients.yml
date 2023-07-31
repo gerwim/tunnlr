@@ -48,6 +48,7 @@ jobs:
         run: |
           release_name="Tunnlr-$GITHUB_REF_NAME-${{ matrix.target }}"
 
+          brew install gtk+3
           cargo build --release
           mv target/release/Tunnlr build/macOS/Contents/MacOS
           mv -r assets/* build/macOS/Contents/MacOS
