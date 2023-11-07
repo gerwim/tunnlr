@@ -24,12 +24,14 @@ public class RequestHandler
         CancellationTokenSource cancellationToken,
         CreateTunnelStreamResponse response)
     {
+        var internalCancellationToken = new CancellationTokenSource();
+        var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Token, internalCancellationToken.Token);
         Task.Run(async () =>
         {
             try
             {
                 using var requestStream =
-                    _requestsClient.CreateRequestStream(cancellationToken: cancellationToken.Token);
+                    _requestsClient.CreateRequestStream(cancellationToken: linkedCancellationToken.Token);
 
                 await requestStream.RequestStream.WriteAsync(new ClientMessage
                 {
@@ -39,11 +41,11 @@ public class RequestHandler
                         SecurityKey = ByteString.CopyFrom(tunnel.SecurityKey),
                         ServedFrom = response.OpenRequestStream.ServedFrom,
                     }
-                }, cancellationToken.Token);
+                }, linkedCancellationToken.Token);
 
 
                 await foreach (var requestStreamResponse in requestStream.ResponseStream.ReadAllAsync(
-                                   cancellationToken: cancellationToken.Token))
+                                   cancellationToken: linkedCancellationToken.Token))
                 {
                     switch (requestStreamResponse.DataCase)
                     {
@@ -61,7 +63,7 @@ public class RequestHandler
                                 () => Http.InvokeRequest(result, BlockingStream),
                                 cancellationToken.Token);
 
-                            HandleOutgoingRequest(tunnel, cancellationToken, task, requestStream, Request);
+                            HandleOutgoingRequest(tunnel, internalCancellationToken, task, requestStream, Request);
                             break;
                         }
                         case ServerMessage.DataOneofCase.ChunkedMessage:
@@ -86,7 +88,7 @@ public class RequestHandler
             {
                 // Ignore cancellation
             }
-        });
+        }, linkedCancellationToken.Token);
     }
 
     private static void HandleOutgoingRequest(Tunnel tunnel, CancellationTokenSource cancellationToken,
@@ -141,6 +143,9 @@ public class RequestHandler
                 activeTunnel.Requests[request] = response;
                 tunnel.NotifyChanged(null, EventArgs.Empty);
             }
+            
+            // End the tasks related to this request
+            cancellationToken.Cancel();
         }, cancellationToken.Token);
     }
 }
