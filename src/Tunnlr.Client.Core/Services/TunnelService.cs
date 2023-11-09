@@ -32,7 +32,7 @@ public class TunnelService
         var cancellationTokenSource = new CancellationTokenSource();
         tunnel.CancellationTokenSource = cancellationTokenSource;
        
-        CreateTunnel(tunnel, cancellationTokenSource.Token).SafeFireAndForget(ex => _logger.LogError("Error: {Exception}", ex));
+        CreateTunnel(tunnel, cancellationTokenSource.Token).SafeFireAndForget(ex => _logger.LogError(ex, "Error creating tunnel"));
 
         ActiveTunnels.TryAdd(tunnel.TunnelId, tunnel);
         return tunnel;
@@ -78,7 +78,7 @@ public class TunnelService
                         break;
                     case CreateTunnelStreamResponse.DataOneofCase.OpenRequestStream:
                         var requestHandler = new RequestHandler(_requestsClient, _logger);
-                        requestHandler.OpenRequestStream(tunnel, cancellationToken, response).SafeFireAndForget(ex => _logger.LogError("Error {Exception}", ex.Message));
+                        requestHandler.OpenRequestStream(tunnel, cancellationToken, response).SafeFireAndForget(ex => _logger.LogError(ex, "Error opening request stream"));
                         break;
                 }
             }

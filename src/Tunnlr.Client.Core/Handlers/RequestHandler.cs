@@ -64,7 +64,8 @@ public class RequestHandler
                         tunnel.NotifyChanged(this, EventArgs.Empty);
                         var httpRequestResult = Http.InvokeRequest(result, BlockingStream, linkedCancellationToken.Token);
 
-                        HandleOutgoingRequest(tunnel, internalCancellationToken, httpRequestResult, requestStream, Request).SafeFireAndForget(ex => _logger.LogError("Error: {Exception}", ex.Message));
+                        HandleOutgoingRequest(tunnel, cancellationToken, httpRequestResult, requestStream, Request)
+                            .SafeFireAndForget(ex => _logger.LogError(ex, "Error handling outgoing request"));
                         break;
                     }
                     case ServerMessage.DataOneofCase.ChunkedMessage:
