@@ -38,6 +38,7 @@ message HttpRequest {
     HttpMethod httpMethod = 2;
     string targetUri = 3;
     map<string, string> headers = 4;
+    bool containsBody = 5;
 }
 
 message HttpResponse {

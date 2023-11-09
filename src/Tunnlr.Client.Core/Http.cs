@@ -33,9 +33,12 @@ public static class Http
                     _ => throw new InvalidHttpMethodException($"Invalid HttpMethod specified: {request.HttpMethod}")
                 }
             };
-            var content = new StreamContent(body, 8192);
-            requestMessage.Content = content;
-            
+            if (request.ContainsBody)
+            {
+                var content = new StreamContent(body, 8192);
+                requestMessage.Content = content;
+            }
+
             foreach (var header in request.Headers)
             {
                 if (header.Key.ToLowerInvariant() == "host") continue;

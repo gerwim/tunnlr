@@ -23,11 +23,15 @@ public class TunnelMiddleware
         if (tunnel is not null)
         {
             var requestId = Guid.NewGuid();
+            
+            var lengthCheckBuffer = new byte[1024];
+            var readBytes  = await context.Request.Body.ReadAsync(lengthCheckBuffer).ConfigureAwait(false);
             var request = new HttpRequest
             {
                 HttpMethod = context.Request.Method.ConvertToHttpMethod(),
                 Id = requestId.ToString(),
                 TargetUri = $"{tunnel.Target}{context.Request.Path}{context.Request.QueryString}",
+                ContainsBody = readBytes > 0,
             };
 
             foreach (var httpRequestHeader in context.Request.Headers)
@@ -64,6 +68,18 @@ public class TunnelMiddleware
             }).ConfigureAwait(false);
             
             // Write data
+            if (readBytes > 0) // write the initial bytes which were used as a length check test
+            {
+                await streamContext.GrpcStream.WriteAsync(new ServerMessage
+                {
+                    ChunkedMessage = new ChunkedMessage
+                    {
+                        HttpRequestId = requestId.ToString(),
+                        Chunk = ByteString.CopyFrom(lengthCheckBuffer[..readBytes]),
+                    }
+                }).ConfigureAwait(false);
+            }
+            // continue with the rest of the body
             int bytesRead;
             var buffer = new byte[64 * 1024];
             while ((bytesRead = await context.Request.Body.ReadAsync(buffer).ConfigureAwait(false)) > 0)
