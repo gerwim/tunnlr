@@ -2,7 +2,7 @@ using Google.Protobuf;
 using Tunnlr.Common;
 using Tunnlr.Common.Protobuf;
 using Tunnlr.Server.Core.Models;
-using Tunnlr.Server.Proxy.Services;
+using Tunnlr.Server.Proxy.GrpcServices;
 using HttpRequest = Tunnlr.Common.Protobuf.HttpRequest;
 
 namespace Tunnlr.Server.Proxy;
@@ -16,9 +16,9 @@ public class TunnelMiddleware
         _nextMiddleware = nextMiddleware;
     }
 
-    public async Task Invoke(HttpContext context, TunnelsService tunnelsService, RequestsService requestsService)
+    public async Task Invoke(HttpContext context, TunnelsGrpcService tunnelsGrpcService, RequestsGrpcService requestsGrpcService)
     {
-        var tunnel = tunnelsService.GetTunnel(context.Request.Host.Host);
+        var tunnel = tunnelsGrpcService.GetTunnel(context.Request.Host.Host);
         if (tunnel is null) await _nextMiddleware.Invoke(context);
         if (tunnel is not null)
         {
@@ -87,7 +87,7 @@ public class TunnelMiddleware
             });
 
             // Wait for response from stream
-            await requestsService.WaitForCompletion(requestId);
+            await requestsGrpcService.WaitForCompletion(requestId);
         }
     }
 }

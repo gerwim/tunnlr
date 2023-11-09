@@ -4,21 +4,21 @@ using Tunnlr.Common.Protobuf;
 using Tunnlr.Server.Core.Models;
 using HttpResponse = Tunnlr.Common.Protobuf.HttpResponse;
 
-namespace Tunnlr.Server.Proxy.Services;
+namespace Tunnlr.Server.Proxy.GrpcServices;
 
-public class RequestsService : Requests.RequestsBase
+public class RequestsGrpcService : Requests.RequestsBase
 {
-    private readonly ILogger<RequestsService> _logger;
-    private readonly TunnelsService _tunnelsService;
+    private readonly ILogger<RequestsGrpcService> _logger;
+    private readonly TunnelsGrpcService _tunnelsGrpcService;
     private static readonly ConcurrentDictionary<Guid, byte> FinishedResponses = new();
 
     private Tunnel? Tunnel { get; set; }
     private Guid RequestId { get; set; }
 
-    public RequestsService(ILogger<RequestsService> logger, TunnelsService tunnelsService)
+    public RequestsGrpcService(ILogger<RequestsGrpcService> logger, TunnelsGrpcService tunnelsGrpcService)
     {
         _logger = logger;
-        _tunnelsService = tunnelsService;
+        _tunnelsGrpcService = tunnelsGrpcService;
     }
 
     public override async Task CreateRequestStream(IAsyncStreamReader<ClientMessage> requestStream, IServerStreamWriter<ServerMessage> responseStream,
@@ -68,7 +68,7 @@ public class RequestsService : Requests.RequestsBase
             {
                 var result = request.RequestStreamCreated;
                 
-                Tunnel = _tunnelsService.GetTunnel(result.ServedFrom);
+                Tunnel = _tunnelsGrpcService.GetTunnel(result.ServedFrom);
                 if (Tunnel is null) throw new Exception("Cancel"); // TODO: should return proper stream error in web instead of loading forever
 
                 var securityKey = Tunnel.SecurityKey;

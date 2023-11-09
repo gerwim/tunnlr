@@ -1,5 +1,5 @@
 using Tunnlr.Server.Proxy;
-using Tunnlr.Server.Proxy.Services;
+using Tunnlr.Server.Proxy.GrpcServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +10,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
-builder.Services.AddScoped<RequestsService>();
-builder.Services.AddScoped<TunnelsService>();
-builder.Services.AddScoped<GeneralService>();
+builder.Services.AddScoped<RequestsGrpcService>();
+builder.Services.AddScoped<TunnelsGrpcService>();
+builder.Services.AddScoped<GeneralGrpcService>();
 
 var app = builder.Build();
 
@@ -21,9 +21,9 @@ if (app.Environment.IsDevelopment())
     app.MapGrpcReflectionService();
 }
 
-app.MapGrpcService<RequestsService>();
-app.MapGrpcService<TunnelsService>();
-app.MapGrpcService<GeneralService>();
+app.MapGrpcService<RequestsGrpcService>();
+app.MapGrpcService<TunnelsGrpcService>();
+app.MapGrpcService<GeneralGrpcService>();
 // Configure the HTTP request pipeline.
 // app.MapGet("/",
 //     () =>

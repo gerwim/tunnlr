@@ -5,17 +5,17 @@ using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Protobuf;
 using Tunnlr.Server.Core.Models;
 
-namespace Tunnlr.Server.Proxy.Services;
+namespace Tunnlr.Server.Proxy.GrpcServices;
 
-public class TunnelsService : Tunnels.TunnelsBase
+public class TunnelsGrpcService : Tunnels.TunnelsBase
 {
-    private readonly ILogger<TunnelsService> _logger;
+    private readonly ILogger<TunnelsGrpcService> _logger;
     private static readonly ConcurrentDictionary<string, Tunnel> ActiveTunnels = new();
     
     private readonly string _servedFromWildcard;
     private string? ServedFrom { get; set; }
 
-    public TunnelsService(ILogger<TunnelsService> logger, IConfiguration configuration)
+    public TunnelsGrpcService(ILogger<TunnelsGrpcService> logger, IConfiguration configuration)
     {
         _logger = logger;
         _servedFromWildcard = configuration.GetRequiredSection("Tunnlr:Server:Proxy")
@@ -27,7 +27,7 @@ public class TunnelsService : Tunnels.TunnelsBase
     {
         try
         {
-            await foreach (var request in requestStream.ReadAllAsync())
+            await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
             {
                 switch (request.DataCase)
                 {

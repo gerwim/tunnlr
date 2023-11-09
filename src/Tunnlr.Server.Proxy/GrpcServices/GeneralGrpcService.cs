@@ -3,9 +3,9 @@ using Grpc.Core;
 using Semver;
 using Tunnlr.Common.Protobuf;
 
-namespace Tunnlr.Server.Proxy.Services;
+namespace Tunnlr.Server.Proxy.GrpcServices;
 
-public class GeneralService : General.GeneralBase
+public class GeneralGrpcService : General.GeneralBase
 {
     public override Task<ValidateServerResponse> ValidateServerVersion(ValidateServerRequest request, ServerCallContext context)
     {
