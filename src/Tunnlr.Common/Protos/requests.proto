@@ -29,6 +29,7 @@ message ServerMessage {
         HttpRequest httpRequest = 1;
         ChunkedMessage chunkedMessage = 2;
         HttpRequestFinished httpRequestFinished = 3;
+        bool closeStream = 4;
     }
 }
 

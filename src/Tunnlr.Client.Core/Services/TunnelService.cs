@@ -50,7 +50,7 @@ public class TunnelService
     {
         try
         {
-            using var commandStream = _tunnelsClient.CreateTunnelStream(cancellationToken:cancellationToken);
+            using var commandStream = _tunnelsClient.CreateTunnelStream(cancellationToken: cancellationToken);
 
             await commandStream.RequestStream.WriteAsync(new CreateTunnelStreamRequest
             {

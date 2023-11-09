@@ -28,13 +28,13 @@ public class RequestHandler
         CancellationToken cancellationToken,
         CreateTunnelStreamResponse response)
     {
-        var internalCancellationToken = new CancellationTokenSource();
-        var linkedCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, internalCancellationToken.Token);
+        var internalCts = new CancellationTokenSource();
+        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, internalCts.Token);
         
         try
         {
             using var requestStream =
-                _requestsClient.CreateRequestStream(cancellationToken: linkedCancellationToken.Token);
+                _requestsClient.CreateRequestStream(cancellationToken: linkedCts.Token);
 
             await requestStream.RequestStream.WriteAsync(new ClientMessage
             {
@@ -44,11 +44,11 @@ public class RequestHandler
                     SecurityKey = ByteString.CopyFrom(tunnel.SecurityKey),
                     ServedFrom = response.OpenRequestStream.ServedFrom,
                 }
-            }, linkedCancellationToken.Token).ConfigureAwait(false);
+            }, linkedCts.Token).ConfigureAwait(false);
 
 
             await foreach (var requestStreamResponse in requestStream.ResponseStream.ReadAllAsync(
-                               cancellationToken: linkedCancellationToken.Token).ConfigureAwait(false))
+                               cancellationToken: linkedCts.Token).ConfigureAwait(false))
             {
                 switch (requestStreamResponse.DataCase)
                 {
@@ -62,9 +62,9 @@ public class RequestHandler
                         };
                         tunnel.Requests.TryAdd(Request, null);
                         tunnel.NotifyChanged(this, EventArgs.Empty);
-                        var httpRequestResult = Http.InvokeRequest(result, BlockingStream, linkedCancellationToken.Token);
+                        var httpRequestResult = Http.InvokeRequest(result, BlockingStream, linkedCts.Token);
 
-                        HandleOutgoingRequest(tunnel, cancellationToken, httpRequestResult, requestStream, Request)
+                        HandleOutgoingRequest(tunnel, linkedCts.Token, httpRequestResult, requestStream, Request)
                             .SafeFireAndForget(ex => _logger.LogError(ex, "Error handling outgoing request"));
                         break;
                     }
@@ -83,6 +83,9 @@ public class RequestHandler
                         tunnel.NotifyChanged(this, EventArgs.Empty);
                         break;
                     }
+                    case ServerMessage.DataOneofCase.CloseStream:
+                        internalCts.Cancel();
+                        break;
                 }
             }
         }
@@ -92,7 +95,7 @@ public class RequestHandler
         }
     }
 
-    private static async Task HandleOutgoingRequest(Tunnel tunnel, CancellationTokenSource cancellationToken,
+    private static async Task HandleOutgoingRequest(Tunnel tunnel, CancellationToken cancellationToken,
         Task<HttpInvokeRequestResult> httpTask,
         AsyncDuplexStreamingCall<ClientMessage, ServerMessage> requestStream, Request request)
     {
@@ -101,7 +104,7 @@ public class RequestHandler
         await requestStream.RequestStream.WriteAsync(new ClientMessage
         {
             HttpResponse = httpResponse.Response
-        }, cancellationToken.Token).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
 
         if (httpResponse.Response is null || httpResponse.Stream is null) throw new Exception("Cancel");
 
@@ -115,7 +118,7 @@ public class RequestHandler
         var buffer = new byte[64 * 1024];
         while ((bytesRead =
                    await httpResponse.Stream.ReadAsync(buffer,
-                       cancellationToken.Token).ConfigureAwait(false)) > 0)
+                       cancellationToken).ConfigureAwait(false)) > 0)
         {
             response.WriteToBody(buffer[..bytesRead]);
             await requestStream.RequestStream.WriteAsync(new ClientMessage
@@ -125,7 +128,7 @@ public class RequestHandler
                     HttpRequestId = httpResponse.Response.HttpRequestId,
                     Chunk = ByteString.CopyFrom(buffer[..bytesRead]),
                 }
-            }, cancellationToken.Token).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
         }
 
         await requestStream.RequestStream.WriteAsync(new ClientMessage
@@ -134,7 +137,7 @@ public class RequestHandler
             {
                 RequestId = httpResponse.Response.HttpRequestId,
             }
-        }, cancellationToken.Token).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
 
         // Set response value to request
         if (TunnelService.ActiveTunnels.TryGetValue(tunnel.TunnelId, out var activeTunnel))
@@ -142,8 +145,5 @@ public class RequestHandler
             activeTunnel.Requests[request] = response;
             tunnel.NotifyChanged(null, EventArgs.Empty);
         }
-            
-        // End the tasks related to this request
-        cancellationToken.Cancel();
     }
 }

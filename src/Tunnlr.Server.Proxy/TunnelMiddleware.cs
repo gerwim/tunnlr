@@ -88,6 +88,12 @@ public class TunnelMiddleware
 
             // Wait for response from stream
             await requestsGrpcService.WaitForCompletion(requestId).ConfigureAwait(false);
+
+            // Send a close stream request to the client
+            await streamContext.GrpcStream.WriteAsync(new ServerMessage
+            {
+                CloseStream = true
+            }).ConfigureAwait(false);
         }
     }
 }
