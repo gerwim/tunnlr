@@ -27,7 +27,7 @@ public class TunnelsGrpcService : Tunnels.TunnelsBase
     {
         try
         {
-            await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken))
+            await foreach (var request in requestStream.ReadAllAsync(context.CancellationToken).ConfigureAwait(false))
             {
                 switch (request.DataCase)
                 {
@@ -53,7 +53,7 @@ public class TunnelsGrpcService : Tunnels.TunnelsBase
                                 ServedFrom = tunnel.ServedFrom,
                                 SecurityKey = ByteString.CopyFrom(tunnel.SecurityKey), 
                             }
-                        });
+                        }).ConfigureAwait(false);
                         break;
                 }
             }

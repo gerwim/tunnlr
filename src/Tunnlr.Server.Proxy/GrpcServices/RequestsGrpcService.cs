@@ -26,9 +26,9 @@ public class RequestsGrpcService : Requests.RequestsBase
     {
         try
         {
-            await foreach (var request in requestStream.ReadAllAsync())
+            await foreach (var request in requestStream.ReadAllAsync().ConfigureAwait(false))
             {
-                await HandleRequest(request, responseStream);
+                await HandleRequest(request, responseStream).ConfigureAwait(false);
             }
         }
         finally
@@ -48,7 +48,7 @@ public class RequestsGrpcService : Requests.RequestsBase
         {
             cancellationToken.ThrowIfCancellationRequested();
             
-            await Task.Delay(25, cancellationToken);
+            await Task.Delay(25, cancellationToken).ConfigureAwait(false);
         }
         
         FinishedResponses.TryRemove(requestId, out _);
@@ -100,8 +100,8 @@ public class RequestsGrpcService : Requests.RequestsBase
                 Tunnel.StreamContexts.TryGetValue(RequestId, out var streamContext);
 
                 if (streamContext?.HttpContext is null) throw new Exception("Cancel");
-                await streamContext.HttpContext.Response.Body.WriteAsync(result.Chunk.ToByteArray());
-                await streamContext.HttpContext.Response.Body.FlushAsync();
+                await streamContext.HttpContext.Response.Body.WriteAsync(result.Chunk.ToByteArray()).ConfigureAwait(false);
+                await streamContext.HttpContext.Response.Body.FlushAsync().ConfigureAwait(false);
                 break;
             }
             case ClientMessage.DataOneofCase.HttpRequestFinished:
