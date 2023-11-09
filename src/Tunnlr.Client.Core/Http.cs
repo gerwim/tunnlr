@@ -1,4 +1,5 @@
 using System.Text;
+using Tunnlr.Client.Core.Models;
 using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Protobuf;
 using HttpMethod = Tunnlr.Common.Protobuf.HttpMethod;
@@ -13,7 +14,7 @@ public static class Http
         ServerCertificateCustomValidationCallback = (_, _, _, _) => true, // TODO: allow configuration per tunnel
     });
     
-    public static async Task<(HttpResponse? response, Stream? stream)> InvokeRequest(HttpRequest request, Stream body)
+    public static async Task<HttpInvokeRequestResult> InvokeRequest(HttpRequest request, Stream body, CancellationToken cancellationToken)
     {
         try
         {
@@ -49,7 +50,7 @@ public static class Http
                 }
             }
 
-            var result = await HttpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead);
+            var result = await HttpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
             var response = new HttpResponse
             {
@@ -59,7 +60,11 @@ public static class Http
             };
             
             Common.Helpers.MapHeaders(result.Headers, result.Content.Headers, response.Headers);
-            return (response, await result.Content.ReadAsStreamAsync());
+            return new HttpInvokeRequestResult
+            {
+                Response = response,
+                Stream = await result.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false)
+            };
         }
         catch (Exception ex)
         {
@@ -72,7 +77,11 @@ public static class Http
             
             response.Headers.Add("Content-Type", "text/html; charset=UTF-8");
             
-            return (response, new MemoryStream(Encoding.UTF8.GetBytes(GenerateErrorPage(ex))));
+            return new HttpInvokeRequestResult
+            {
+                Response = response,
+                Stream = new MemoryStream(Encoding.UTF8.GetBytes(GenerateErrorPage(ex)))
+            };
         }
     }
     

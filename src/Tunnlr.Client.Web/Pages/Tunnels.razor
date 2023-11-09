@@ -77,7 +77,7 @@
 
     private async Task DeleteTunnel(Tunnel tunnel)
     {
-        if (tunnel.Status is not TunnelStatus.Stopped) await DestroyTunnel(tunnel);
+        if (tunnel.Status is not TunnelStatus.Stopped) DestroyTunnel(tunnel);
         
         var dbTunnel = await DbContext.Tunnels.FindAsync(tunnel.TunnelId);
         if (dbTunnel is not null)
@@ -97,27 +97,27 @@
 
     private List<Tunnel> _tunnels = new();
 
-    public async Task StartOrStopTunnel(Tunnel tunnel)
+    public void StartOrStopTunnel(Tunnel tunnel)
     {
         switch (tunnel.Status)
         {
             case TunnelStatus.Started:
-                await DestroyTunnel(tunnel);
+                DestroyTunnel(tunnel);
                 break;
             case TunnelStatus.Stopped:
-                await CreateTunnel(tunnel);
+                CreateTunnel(tunnel);
                 break;
         }
     }
 
-    private async Task CreateTunnel(Tunnel tunnel)
+    private void CreateTunnel(Tunnel tunnel)
     {
-        await TunnelService.CreateTunnel(tunnel);
+        TunnelService.CreateTunnel(tunnel);
     }
 
-    private async Task DestroyTunnel(Tunnel tunnel)
+    private void DestroyTunnel(Tunnel tunnel)
     {
-        await TunnelService.DestroyTunnel(tunnel);
+        TunnelService.DestroyTunnel(tunnel);
     }
 
     private void OnTunnelStateChange(object? sender, EventArgs e)

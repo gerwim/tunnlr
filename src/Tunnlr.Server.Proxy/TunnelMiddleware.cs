@@ -19,7 +19,7 @@ public class TunnelMiddleware
     public async Task Invoke(HttpContext context, TunnelsGrpcService tunnelsGrpcService, RequestsGrpcService requestsGrpcService)
     {
         var tunnel = tunnelsGrpcService.GetTunnel(context.Request.Host.Host);
-        if (tunnel is null) await _nextMiddleware.Invoke(context);
+        if (tunnel is null) await _nextMiddleware.Invoke(context).ConfigureAwait(false);
         if (tunnel is not null)
         {
             var requestId = Guid.NewGuid();
@@ -51,22 +51,22 @@ public class TunnelMiddleware
                     RequestId = requestId.ToString(),
                     ServedFrom = context.Request.Host.Host,
                 }
-            });
+            }).ConfigureAwait(false);
             // Wait for requestStream to be opened
             while (streamContext.GrpcStream is null)
             {
-                await Task.Delay(25);
+                await Task.Delay(25).ConfigureAwait(false);
             }
             // Write headers
             await streamContext.GrpcStream.WriteAsync(new ServerMessage
             {
                 HttpRequest = request
-            });
+            }).ConfigureAwait(false);
             
             // Write data
             int bytesRead;
             var buffer = new byte[64 * 1024];
-            while ((bytesRead = await context.Request.Body.ReadAsync(buffer)) > 0)
+            while ((bytesRead = await context.Request.Body.ReadAsync(buffer).ConfigureAwait(false)) > 0)
             {
                 await streamContext.GrpcStream.WriteAsync(new ServerMessage
                 {
@@ -75,7 +75,7 @@ public class TunnelMiddleware
                         HttpRequestId = requestId.ToString(),
                         Chunk = ByteString.CopyFrom(buffer[..bytesRead]),
                     }
-                });
+                }).ConfigureAwait(false);
             }
             // Send finished marker
             await streamContext.GrpcStream.WriteAsync(new ServerMessage
@@ -84,10 +84,10 @@ public class TunnelMiddleware
                 {
                     RequestId = requestId.ToString(),
                 }
-            });
+            }).ConfigureAwait(false);
 
             // Wait for response from stream
-            await requestsGrpcService.WaitForCompletion(requestId);
+            await requestsGrpcService.WaitForCompletion(requestId).ConfigureAwait(false);
         }
     }
 }
