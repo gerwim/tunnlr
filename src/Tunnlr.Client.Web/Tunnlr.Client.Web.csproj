@@ -20,9 +20,10 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Tunnlr.Client.Core\Tunnlr.Client.Core.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Tunnlr.Client.*\*.csproj" />
+      <ProjectReference Remove="..\Tunnlr.Client.Web\Tunnlr.Client.Web.csproj" />
+    </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Persistence\Migrations\" />

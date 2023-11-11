@@ -8,6 +8,7 @@ using Tunnlr.Client.Web;
 using Tunnlr.Client.Web.Extensions;
 using Tunnlr.Client.Web.Persistence;
 using Tunnlr.Client.Web.Services;
+using Tunnlr.Common.DependencyInjection;
 using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Options;
 using Tunnlr.Common.Protobuf;
@@ -66,6 +67,9 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpContextAccessor();
 
+// Run all builders
+Builders.RunAll(builder);
+
 var app = builder.Build();
 
 // Apply database migrations
@@ -90,11 +94,14 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-app.UseAuthentication();
-app.UseAuthorization();
+// Run all configurations
+Configurators.RunAll(app);
 
 #if !DEBUG
     Browser.Start();

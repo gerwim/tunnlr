@@ -20,7 +20,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Tunnlr.Server.Core\Tunnlr.Server.Core.csproj" />
+      <ProjectReference Include="..\Tunnlr.Server.*\*.csproj" />
+      <ProjectReference Remove="..\Tunnlr.Server.Proxy\Tunnlr.Server.Proxy.csproj" />
     </ItemGroup>
 
 </Project>

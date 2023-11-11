@@ -1,6 +1,6 @@
 namespace Tunnlr.Common.Options;
 
-public class Auth0Options
+public class Auth0Options : IOptions
 {
     public const string OptionKey = "Auth0";
     

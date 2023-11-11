@@ -1,6 +1,11 @@
 using GerwimFeiken.Cache;
 using GerwimFeiken.Cache.InMemory;
 using GerwimFeiken.Cache.InMemory.Options;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Tokens;
+using Tunnlr.Common.DependencyInjection;
+using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Options;
 using Tunnlr.Server.Core.Authentication;
 using Tunnlr.Server.Proxy;
@@ -27,6 +32,9 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddHttpClient<IAuthenticationService>();
 builder.Configuration.GetRequiredSection(Auth0Options.OptionKey).RegisterOptions<Auth0Options>(builder);
 
+// Run all builders
+Builders.RunAll(builder);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -37,6 +45,11 @@ if (app.Environment.IsDevelopment())
 app.MapGrpcService<RequestsGrpcService>();
 app.MapGrpcService<TunnelsGrpcService>();
 app.MapGrpcService<GeneralGrpcService>();
+app.MapGrpcService<DomainsGrpcService>();
+
+// Run all configurations
+Configurators.RunAll(app);
+
 // Configure the HTTP request pipeline.
 // app.MapGet("/",
 //     () =>
