@@ -32,11 +32,8 @@ public class TunnelsGrpcService : Tunnels.TunnelsBase
                 switch (request.DataCase)
                 {
                     case CreateTunnelStreamRequest.DataOneofCase.StartTunnelRequest:
-#if DEBUG
-                        ServedFrom = _servedFromWildcard.Replace("*", "tunnel");
-#else
                         ServedFrom = _servedFromWildcard.Replace("*", Guid.NewGuid().ToString());
-#endif
+                        
                         var tunnel = new Tunnel
                         {
                             ServedFrom = ServedFrom,
