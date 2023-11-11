@@ -1,3 +1,4 @@
+using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,9 @@ using Tunnlr.Client.Core.Services;
 using Tunnlr.Client.Web;
 using Tunnlr.Client.Web.Extensions;
 using Tunnlr.Client.Web.Persistence;
+using Tunnlr.Client.Web.Services;
+using Tunnlr.Common.Exceptions;
+using Tunnlr.Common.Options;
 using Tunnlr.Common.Protobuf;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,10 +41,30 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<TunnelService>();
 builder.Services.AddScoped<GeneralService>();
 builder.Services.AddMudServices();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+var auth0Options = builder.Configuration.GetRequiredSection(Auth0Options.OptionKey).RegisterOptions<Auth0Options>(builder);
 
 builder.AddGrpcClient<Tunnels.TunnelsClient>();
 builder.AddGrpcClient<Requests.RequestsClient>();
 builder.AddGrpcClient<General.GeneralClient>();
+
+// Configure authentication
+builder.Services.ConfigureSameSiteNoneCookies();
+
+builder.Services.AddAuth0WebAppAuthentication(options =>
+{
+    options.Domain = auth0Options.Domain ?? throw new InvalidConfigurationException($"{nameof(auth0Options.Domain)} is empty");
+    options.ClientId = auth0Options.ClientId ?? throw new InvalidConfigurationException($"{nameof(auth0Options.ClientId)} is empty");
+    options.ClientSecret = auth0Options.ClientSecret ?? throw new InvalidConfigurationException($"{nameof(auth0Options.ClientSecret)} is empty");
+})
+    .WithAccessToken(options =>
+    {
+        options.Audience = auth0Options.Audience ?? throw new InvalidConfigurationException($"{nameof(auth0Options.Audience)} is empty");
+        options.UseRefreshTokens = true;
+    });
+builder.Services.AddControllersWithViews();
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -68,6 +92,9 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 #if !DEBUG
     Browser.Start();

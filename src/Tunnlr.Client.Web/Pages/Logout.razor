@@ -1,0 +1,26 @@
+@page "/Logout"
+@using Auth0.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ILogger<Logout> Logger;
+<h3>Logout</h3>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContextAccessor.HttpContext is null)
+        {
+            Logger.LogError("HttpContext is null");
+            return;
+        }
+        
+        var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
+            .WithRedirectUri("/")
+            .Build();
+
+        await HttpContextAccessor.HttpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+        await HttpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme); 
+    }
+}

@@ -1,0 +1,27 @@
+@page "/Login"
+@using Auth0.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ILogger<Login> Logger;
+<h3>Login</h3>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContextAccessor.HttpContext is null)
+        {
+            Logger.LogError("HttpContext is null");
+            return;
+        }
+        
+        var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
+            // Indicate here where Auth0 should redirect the user after a login.
+            // Note that the resulting absolute Uri must be added to the
+            // **Allowed Callback URLs** settings for the app.
+            .WithRedirectUri("/")
+            .Build();
+
+        await HttpContextAccessor.HttpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+    }
+}

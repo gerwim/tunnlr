@@ -19,4 +19,9 @@
         <HintPath>..\Tunnlr.Server.Proxy\bin\Debug\net7.0\Tunnlr.Common.dll</HintPath>
       </Reference>
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="GerwimFeiken.Cache" Version="1.4.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
+    </ItemGroup>
 </Project>

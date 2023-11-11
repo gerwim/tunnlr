@@ -1,0 +1,11 @@
+@namespace Tunnlr.Client.Web.Components.RequiresLogin
+@inject NavigationManager Navigation
+
+<MudAlert Severity="Severity.Error" Variant="Variant.Filled">This page requires you to be <a href="/login" @onclick="Navigate">logged in</a>.</MudAlert>
+
+@code {
+    private void Navigate()
+    {
+        Navigation.NavigateTo("/login", true);
+    }
+}

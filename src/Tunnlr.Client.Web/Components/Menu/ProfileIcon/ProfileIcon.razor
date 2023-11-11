@@ -1,0 +1,32 @@
+@namespace Tunnlr.Client.Web.Components.Menu.ProfileIcon
+
+@using Tunnlr.Client.Web.Services
+@inject IAuthenticationService AuthenticationService;
+
+<MudMenu>
+    <ActivatorContent>
+        <MudAvatar Color="Color.Success" Style="width: 24px; height: 24px;">@AvatarName</MudAvatar>
+    </ActivatorContent>
+    <ChildContent>
+        <AuthorizeView>
+            <Authorized>
+                <MudMenuItem Href="/logout" ForceLoad="true">Logout</MudMenuItem>
+            </Authorized>
+            <NotAuthorized>
+                <MudMenuItem Href="/login" ForceLoad="true">Login</MudMenuItem>
+            </NotAuthorized>
+        </AuthorizeView>
+    </ChildContent>
+</MudMenu>
+
+@code
+{
+    public string AvatarName { get; set; } = "?";
+
+    protected override Task OnInitializedAsync()
+    {
+        AvatarName = AuthenticationService.GetName()?[0].ToString() ?? "?";
+
+        return base.OnInitializedAsync();
+    }
+}
