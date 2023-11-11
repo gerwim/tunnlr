@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Proxy and Web UI" type="CompoundRunConfigurationType">
+    <toRun name="Tunnlr.Client.Web" type="LaunchSettings" />
+    <toRun name="Tunnlr.Server.Proxy: http" type="LaunchSettings" />
+    <method v="2" />
+  </configuration>
+</component>
