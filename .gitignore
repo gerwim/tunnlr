@@ -397,6 +397,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .idea
-src/Tunnlr.Web/*.db*
-src/Tunnlr.Server.Proxy/*.db*
+src/client/Tunnlr.Web/*.db*
+src/server/Tunnlr.Server.Proxy/*.db*
 src/Tunnlr.Client.Web/Tunnlr.Client.Web.db*

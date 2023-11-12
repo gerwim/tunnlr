@@ -1,0 +1,48 @@
+@using Tunnlr.Client.Core.Models
+@using Microsoft.EntityFrameworkCore
+@using Tunnlr.Client.Persistence
+@namespace Tunnlr.Client.Web.Components.Dialogs.BindReservedDomainDialog
+@inject TunnlrClientDbContext ClientDbContext
+
+<MudDialog>
+    <DialogContent>
+        Bind @ReservedDomain.Domain to
+        <MudSelect Dense="true" T="Guid" Label="Tunnel" @bind-Value="SelectedTunnel" Variant="Variant.Text">
+            <MudSelectItem Value="@(Guid.Empty)">none</MudSelectItem>
+            @foreach (var dbContextTunnel in ClientDbContext.Tunnels.Include(x => x.ReservedDomain).Where(x => x.Id == SelectedTunnel || x.ReservedDomain == null))
+            {
+                <MudSelectItem Value="@(dbContextTunnel.Id)">@dbContextTunnel.TargetUri</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public required ReservedDomain ReservedDomain { get; set; }
+    private Guid SelectedTunnel { get; set; } = Guid.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var reservedDomain = await ClientDbContext.ReservedDomains.FirstOrDefaultAsync(x => x.Domain == ReservedDomain.Domain);
+        if (reservedDomain?.TunnelId is not null ) SelectedTunnel = reservedDomain.TunnelId.Value;
+    }
+
+    void Submit()
+    {
+        var reservedDomain = ClientDbContext.ReservedDomains.AsTracking().FirstOrDefault(x => x.Domain == ReservedDomain.Domain);
+        if (reservedDomain is not null)
+        {
+            reservedDomain.TunnelId = SelectedTunnel == Guid.Empty ? null : SelectedTunnel;
+            ClientDbContext.SaveChanges();
+        }
+
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

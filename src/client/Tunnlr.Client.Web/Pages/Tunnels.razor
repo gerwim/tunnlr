@@ -1,0 +1,153 @@
+﻿@page "/Tunnels"
+@using Tunnlr.Client.Core.Models
+@using Tunnlr.Client.Core.Services
+@using Tunnlr.Client.Persistence
+@using Tunnlr.Client.Web.Components.AddTunnel
+@using Microsoft.EntityFrameworkCore
+@inject TunnelService TunnelService
+@inject TunnlrClientDbContext ClientDbContext
+<PageTitle>Tunnlr</PageTitle>
+@implements IDisposable
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-16 pt-16">
+
+    <h3>Tunnels</h3>
+
+    <MudTable Items="@_tunnels" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+        <HeaderContent>
+            <MudTh>Target URI</MudTh>
+            <MudTh>Served from</MudTh>
+            <MudTh>Requests</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Target URI">@context.TargetUri
+                @if (!string.IsNullOrWhiteSpace(context.ReservedDomain?.Domain))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Language" Style="opacity: 0.5" Href="/reserved-domains" />
+                }
+                </MudTd>
+            <MudTd DataLabel="Served from"><MudLink Href="@context.ServedFrom" Target="_blank">@context.ServedFrom</MudLink></MudTd>
+            <MudTd DataLabel="Requests"><MudLink Href="@($"/tunnels/{context.TunnelId}/requests")">@context.Requests.Count</MudLink></MudTd>
+            <MudTd DataLabel="Actions">
+                <MudToggleIconButton Toggled="@(context.Status == TunnelStatus.Started)"
+                                     ToggledChanged="() => StartOrStopTunnel(context)"
+                                     Icon="@Icons.Material.Filled.Start" Color="@Color.Success" Title="Start"
+                                     ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="@Color.Error" ToggledTitle="Stop"/>
+                
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               OnClick="() => DeleteTunnel(context)"
+                               aria-label="delete" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+    @if (!_showCreateTunnel)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _showCreateTunnel = !_showCreateTunnel">Create tunnel</MudButton>
+    }
+    else
+    {
+        <AddTunnel OnUpdate="LoadData" />   
+    }
+
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private bool _showCreateTunnel;
+
+    private void LoadData()
+    {
+        _tunnels = ClientDbContext.Tunnels.Include(x => x.ReservedDomain).ToList().Select(x =>
+        {
+            var activeTunnel = TunnelService.ActiveTunnels.FirstOrDefault(tunnel => tunnel.Key == x.Id).Value;
+
+            if (activeTunnel is not null)
+            {
+                activeTunnel.ChangedEvent += OnRequestsChange;
+                return activeTunnel;
+            }
+
+            return new Tunnel
+            {
+                TunnelId = x.Id,
+                TargetUri = x.TargetUri,
+                Status = TunnelStatus.Stopped,
+                ReservedDomain = x.ReservedDomain is not null
+                    ? new ReservedDomain
+                        {
+                            Domain = x.ReservedDomain.Domain,
+                        } 
+                    : null,
+            };
+        }).ToList();
+
+        _showCreateTunnel = false;
+        _loading = false;
+
+        StateHasChanged();
+    }
+
+    private async Task DeleteTunnel(Tunnel tunnel)
+    {
+        if (tunnel.Status is not TunnelStatus.Stopped) DestroyTunnel(tunnel);
+        
+        var dbTunnel = await ClientDbContext.Tunnels.FindAsync(tunnel.TunnelId);
+        if (dbTunnel is not null)
+        {
+            ClientDbContext.Tunnels.Remove(dbTunnel);
+            await ClientDbContext.SaveChangesAsync();
+        }
+        
+        LoadData();
+    }
+
+    protected override void OnInitialized()
+    {
+        TunnelService.ChangedEvent += OnTunnelStateChange;
+        LoadData();
+    }
+
+    private List<Tunnel> _tunnels = new();
+
+    public void StartOrStopTunnel(Tunnel tunnel)
+    {
+        switch (tunnel.Status)
+        {
+            case TunnelStatus.Started:
+                DestroyTunnel(tunnel);
+                break;
+            case TunnelStatus.Stopped:
+                CreateTunnel(tunnel);
+                break;
+        }
+    }
+
+    private void CreateTunnel(Tunnel tunnel)
+    {
+        TunnelService.CreateTunnel(tunnel);
+    }
+
+    private void DestroyTunnel(Tunnel tunnel)
+    {
+        TunnelService.DestroyTunnel(tunnel);
+    }
+
+    private void OnTunnelStateChange(object? sender, EventArgs e)
+    {
+        InvokeAsync(LoadData);
+    }
+    
+    private void OnRequestsChange(object? sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        TunnelService.ChangedEvent -= OnTunnelStateChange;
+        foreach (var tunnel in _tunnels)
+        {
+            tunnel.ChangedEvent -= OnRequestsChange;
+        }
+    } 
+}

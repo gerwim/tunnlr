@@ -5,15 +5,15 @@ namespace Tunnlr.Server.Features.ReservedDomains;
 
 public class ReservedDomainsService : IReservedDomainsService
 {
-    private readonly TunnlrDbContext _tunnlrDbContext;
+    private readonly TunnlrServerDbContext _tunnlrServerDbContext;
 
-    public ReservedDomainsService(TunnlrDbContext tunnlrDbContext)
+    public ReservedDomainsService(TunnlrServerDbContext tunnlrServerDbContext)
     {
-        _tunnlrDbContext = tunnlrDbContext;
+        _tunnlrServerDbContext = tunnlrServerDbContext;
     }
 
     public ValueTask<ReservedDomain?> GetReservedDomain(string domain)
     {
-        return _tunnlrDbContext.ReservedDomains.FindAsync(domain);
+        return _tunnlrServerDbContext.ReservedDomains.FindAsync(domain);
     }
 }

@@ -1,0 +1,99 @@
+﻿@page "/reserved-domains"
+@using Tunnlr.Client.Core.Services
+@using Tunnlr.Client.Web.Components.CreateReservedDomain
+@using Tunnlr.Client.Core.Models
+@using Tunnlr.Client.Persistence
+@using Tunnlr.Client.Web.Components.Dialogs.BindReservedDomainDialog
+@using Tunnlr.Client.Web.Components.PremiumFeature
+@using Tunnlr.Client.Web.Components.RequiresLogin
+@using Microsoft.EntityFrameworkCore
+@inject IDialogService DialogService
+@inject DomainsService DomainsService
+@inject TunnlrClientDbContext TunnlrClientDbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+<PageTitle>Tunnlr</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-16 pt-16">
+    <PremiumFeature />
+
+    <AuthorizeView>
+        <Authorized>
+            <h3>Reserved domains</h3>
+            <MudTable Items="@_reservedDomains" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info">
+                <HeaderContent>
+                    <MudTh>Domain</MudTh>
+                    <MudTh>Bound to</MudTh>
+                    <MudTh>Actions</MudTh>
+                </HeaderContent>
+                <RowTemplate Context="reservedDomain">
+                    <MudTd DataLabel="Domain">@reservedDomain.Domain</MudTd>
+                    <MudTd DataLabel="Bound to">@TunnlrClientDbContext.ReservedDomains.Include(x => x.Tunnel).FirstOrDefault(x => x.Domain == reservedDomain.Domain)?.Tunnel?.TargetUri</MudTd>
+                    <MudTd DataLabel="Actions">
+                        <MudIconButton Icon="@Icons.Material.Filled.Link"
+                                       OnClick="() => ShowBindReservedDomainDialog(reservedDomain)"
+                                       aria-label="bind"/>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       OnClick="() => DeleteReservedDomain(reservedDomain)"
+                                       aria-label="delete"/>
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+            @if (!_showCreateReservedDomain)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => _showCreateReservedDomain = !_showCreateReservedDomain">Create reserved domain</MudButton>
+            }
+            else
+            {
+                <CreateReservedDomain OnUpdate="LoadData"/>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <RequiresLogin />
+        </NotAuthorized>
+    </AuthorizeView>
+
+</MudContainer>
+
+@code {
+    private bool _loading = true;
+    private bool _showCreateReservedDomain;
+    private readonly List<ReservedDomain> _reservedDomains = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        if (!authState.User.Identity?.IsAuthenticated ?? false) return;
+        
+        var result = (await DomainsService.GetReservedDomains()).ToList();
+        _reservedDomains.Clear();
+        _reservedDomains.AddRange(result);
+        await TunnlrClientDbContext.SaveChangesAsync();
+        _showCreateReservedDomain = false;
+        _loading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task ShowBindReservedDomainDialog(ReservedDomain domain)
+    {
+        var parameters = new DialogParameters<BindReservedDomainDialog>
+        {
+            { x => x.ReservedDomain, domain }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<BindReservedDomainDialog>("Bind reserved domain", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled) await LoadData();
+    }
+
+    private async Task DeleteReservedDomain(ReservedDomain domain)
+    {
+        await DomainsService.DeleteReservedDomain(domain.Domain);
+        await LoadData();
+    }
+}
