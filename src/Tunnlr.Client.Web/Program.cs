@@ -41,6 +41,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<TunnelService>();
 builder.Services.AddScoped<GeneralService>();
+builder.Services.AddScoped<DomainsService>();
 builder.Services.AddMudServices();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 var auth0Options = builder.Configuration.GetRequiredSection(Auth0Options.OptionKey).RegisterOptions<Auth0Options>(builder);
@@ -48,6 +49,7 @@ var auth0Options = builder.Configuration.GetRequiredSection(Auth0Options.OptionK
 builder.AddGrpcClient<Tunnels.TunnelsClient>();
 builder.AddGrpcClient<Requests.RequestsClient>();
 builder.AddGrpcClient<General.GeneralClient>();
+builder.AddGrpcClient<Domains.DomainsClient>();
 
 // Configure authentication
 builder.Services.ConfigureSameSiteNoneCookies();

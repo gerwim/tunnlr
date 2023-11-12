@@ -1,6 +1,7 @@
 ﻿syntax = "proto3";
 
 option csharp_namespace = "Tunnlr.Common.Protobuf";
+import "google/protobuf/wrappers.proto";
 
 package tunnels;
 
@@ -28,6 +29,7 @@ message OpenRequestStream {
 
 message StartTunnelRequest {
     string targetHost = 1;
+    google.protobuf.StringValue useReservedDomain = 2;
 }
 
 message StartTunnelResponse {

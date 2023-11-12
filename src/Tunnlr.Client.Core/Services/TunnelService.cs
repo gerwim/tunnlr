@@ -56,7 +56,8 @@ public class TunnelService
             {
                 StartTunnelRequest = new StartTunnelRequest
                 {
-                    TargetHost = tunnel.TargetUri
+                    TargetHost = tunnel.TargetUri,
+                    UseReservedDomain = tunnel.ReservedDomain?.Domain,
                 }
             }, cancellationToken).ConfigureAwait(false);
 

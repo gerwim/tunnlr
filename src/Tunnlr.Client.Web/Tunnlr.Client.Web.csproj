@@ -29,4 +29,8 @@
     <Folder Include="Persistence\Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="Components\CreateReservedDomain\CreateReservedDomain.razor" />
+  </ItemGroup>
+
 </Project>

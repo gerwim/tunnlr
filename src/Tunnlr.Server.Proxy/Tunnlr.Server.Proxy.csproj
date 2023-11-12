@@ -11,6 +11,8 @@
         <PackageReference Include="GerwimFeiken.Cache.InMemory" Version="1.3.0" />
         <PackageReference Include="Grpc.AspNetCore" Version="2.58.0" />
         <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.58.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="7.0.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -21,6 +23,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Tunnlr.Server.*\*.csproj" />
+      <ProjectReference Include="..\server\features\**\*.csproj" />
       <ProjectReference Remove="..\Tunnlr.Server.Proxy\Tunnlr.Server.Proxy.csproj" />
     </ItemGroup>
 

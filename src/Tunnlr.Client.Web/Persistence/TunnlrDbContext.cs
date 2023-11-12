@@ -9,5 +9,6 @@ public class TunnlrDbContext : DbContext
     {
     }
 
+    public DbSet<ReservedDomain> ReservedDomains { get; set; } = null!;
     public DbSet<Tunnel> Tunnels { get; set; } = null!;
 }

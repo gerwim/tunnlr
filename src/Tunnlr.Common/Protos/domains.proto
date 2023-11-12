@@ -1,0 +1,28 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "Tunnlr.Common.Protobuf";
+import "google/protobuf/empty.proto";
+
+package domains;
+
+service Domains {
+    rpc CreateReservedDomain (CreateReservedDomainRequest) returns (CreateReservedDomainResponse);
+    rpc GetReservedDomains (google.protobuf.Empty) returns (GetReservedDomainsResponse);
+    rpc DeleteReservedDomain (DeleteReservedDomainRequest) returns (google.protobuf.Empty);
+}
+
+message CreateReservedDomainRequest {
+    string domainPrefix = 1;
+}
+
+message CreateReservedDomainResponse {
+    string domain = 1;
+}
+
+message GetReservedDomainsResponse {
+    repeated string domains = 1;
+}
+
+message DeleteReservedDomainRequest {
+    string domain = 1;
+}

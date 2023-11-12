@@ -10,6 +10,11 @@
       <Protobuf Include="Protos\*.proto" GrpcServices="Both" Access="public">
           <Generator>MSBuild:Compile</Generator>
       </Protobuf>
+      <Protobuf Update="Protos\domains.proto">
+        <ProtoCompile>True</ProtoCompile>
+        <CompileOutputs>True</CompileOutputs>
+        <OutputDir>obj\Debug/net7.0/</OutputDir>
+      </Protobuf>
     </ItemGroup>
 
     <ItemGroup>

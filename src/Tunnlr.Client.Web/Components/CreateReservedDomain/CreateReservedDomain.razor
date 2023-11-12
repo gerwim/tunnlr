@@ -1,0 +1,28 @@
+﻿@using Tunnlr.Client.Core.Services
+@namespace Tunnlr.Client.Web.Components.CreateReservedDomain
+@inject DomainsService DomainsService;
+<MudPaper Class="pa-4">
+    <MudForm Model="@_model"@bind-IsValid="@_success" @bind-Errors="@_errors">
+        <MudTextField T="string" Label="Domain prefix" Required="true" @bind-Value="_model.DomainPrefix" Placeholder="prefix" RequiredError="Domain is required!" />
+        <div class="d-flex align-center justify-space-between">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_success)" Class="ml-auto" OnClick="Create">Create</MudButton>
+        </div>
+    </MudForm>   
+</MudPaper>
+
+@code {
+    bool _success;
+    string[] _errors = { };
+    private readonly CreateReservedDomainForm _model = new ();
+    
+    [Parameter]
+    public Func<Task>? OnUpdate { get; set; }
+
+    private async Task Create()
+    {
+        if (string.IsNullOrWhiteSpace(_model.DomainPrefix)) return;
+        
+        await DomainsService.ReserveDomain(_model.DomainPrefix);
+        OnUpdate?.Invoke();
+    }
+}

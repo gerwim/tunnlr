@@ -9,6 +9,8 @@ public class Tunnel
     public TunnelStatus Status { get; set; }
     public string? ServedFrom { get; set; } // TODO: make this "ServedFrom" / "ServedFromHostname" consistent throughout codebase
 
+    public ReservedDomain? ReservedDomain { get; set; }
+
     public CancellationTokenSource? CancellationTokenSource { get; set; }
 
     public Dictionary<Request, Response?> Requests { get; set; } = new();

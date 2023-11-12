@@ -3,6 +3,7 @@
 @using Tunnlr.Client.Core.Services
 @using Tunnlr.Client.Web.Persistence
 @using Tunnlr.Client.Web.Components.AddTunnel
+@using Microsoft.EntityFrameworkCore
 @inject TunnelService TunnelService
 @inject TunnlrDbContext DbContext
 <PageTitle>Tunnlr</PageTitle>
@@ -19,7 +20,12 @@
             <MudTh>Actions</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Target URI">@context.TargetUri</MudTd>
+            <MudTd DataLabel="Target URI">@context.TargetUri
+                @if (!string.IsNullOrWhiteSpace(context.ReservedDomain?.Domain))
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Language" Style="opacity: 0.5" Href="/reserved-domains" />
+                }
+                </MudTd>
             <MudTd DataLabel="Served from"><MudLink Href="@context.ServedFrom" Target="_blank">@context.ServedFrom</MudLink></MudTd>
             <MudTd DataLabel="Requests"><MudLink Href="@($"/tunnels/{context.TunnelId}/requests")">@context.Requests.Count</MudLink></MudTd>
             <MudTd DataLabel="Actions">
@@ -51,7 +57,7 @@
 
     private void LoadData()
     {
-        _tunnels = DbContext.Tunnels.ToList().Select(x =>
+        _tunnels = DbContext.Tunnels.Include(x => x.ReservedDomain).ToList().Select(x =>
         {
             var activeTunnel = TunnelService.ActiveTunnels.FirstOrDefault(tunnel => tunnel.Key == x.Id).Value;
 
@@ -66,6 +72,12 @@
                 TunnelId = x.Id,
                 TargetUri = x.TargetUri,
                 Status = TunnelStatus.Stopped,
+                ReservedDomain = x.ReservedDomain is not null
+                    ? new ReservedDomain
+                        {
+                            Domain = x.ReservedDomain.Domain,
+                        } 
+                    : null,
             };
         }).ToList();
 

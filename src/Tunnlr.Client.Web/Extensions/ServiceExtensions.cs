@@ -1,5 +1,6 @@
 using Grpc.Core;
 using Grpc.Net.Client.Configuration;
+using Tunnlr.Client.Web.Services;
 using Tunnlr.Common.Exceptions;
 
 namespace Tunnlr.Client.Web.Extensions;
@@ -34,6 +35,19 @@ public static class ServiceExtensions
             {
                 channelOptions.ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } };
             });
+        }).AddCallCredentials(async (context, metadata, serviceProvider) =>
+        {
+            var authenticationService = serviceProvider.GetRequiredService<IAuthenticationService>();
+            var token = await authenticationService.GetAccessToken();
+            if (!string.IsNullOrEmpty(token))
+            {
+                metadata.Add("Authorization", $"Bearer {token}");
+            }
+        }).ConfigureChannel(options =>
+        {
+#if DEBUG
+            options.UnsafeUseInsecureChannelCallCredentials = true;
+#endif
         });
     }
 }

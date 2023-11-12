@@ -71,14 +71,6 @@
         var result = (await DomainsService.GetReservedDomains()).ToList();
         _reservedDomains.Clear();
         _reservedDomains.AddRange(result);
-        // TODO: implement sort of sync method (delete local domains not present on remote)
-        foreach (var reservedDomain in result)
-        {
-            var entryInDb = await TunnlrDbContext.ReservedDomains.FindAsync(reservedDomain.Domain) ?? (await TunnlrDbContext.ReservedDomains.AddAsync(new Persistence.Models.ReservedDomain
-            {
-                Domain = reservedDomain.Domain
-            })).Entity;
-        }
         await TunnlrDbContext.SaveChangesAsync();
         _showCreateReservedDomain = false;
         _loading = false;

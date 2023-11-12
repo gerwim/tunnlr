@@ -20,6 +20,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tunnlr.Client.Web", "src\Tu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tunnlr.Server.Persistence", "src\Tunnlr.Server.Persistence\Tunnlr.Server.Persistence.csproj", "{7878B3F3-B836-4DFE-BA3B-3C6A104FAEA1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Features", "Features", "{10B311E0-23E2-4907-A0F3-DD6C58F09372}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tunnlr.Server.Features.ReservedDomains", "src\server\features\Tunnlr.Server.Features.ReservedDomains\Tunnlr.Server.Features.ReservedDomains.csproj", "{A5909C76-6465-4D75-9B94-F1FE74A19DE6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +54,10 @@ Global
 		{7878B3F3-B836-4DFE-BA3B-3C6A104FAEA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7878B3F3-B836-4DFE-BA3B-3C6A104FAEA1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7878B3F3-B836-4DFE-BA3B-3C6A104FAEA1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5909C76-6465-4D75-9B94-F1FE74A19DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5909C76-6465-4D75-9B94-F1FE74A19DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5909C76-6465-4D75-9B94-F1FE74A19DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5909C76-6465-4D75-9B94-F1FE74A19DE6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A82BE835-67DD-4A51-B7F4-E821CDF1CFA3} = {2EC2ADA5-1B43-49BC-B4FB-68202DCC9A88}
@@ -60,5 +68,7 @@ Global
 		{6AE1F549-9D0A-4ABC-97FE-69C5EB27226C} = {30F50737-185B-4725-AE5E-02DCB0872A07}
 		{924EA981-93F9-4F2D-96A5-967EC473986D} = {A4F7A8B1-F649-4D56-90C4-D2CA8040C8C2}
 		{7878B3F3-B836-4DFE-BA3B-3C6A104FAEA1} = {30F50737-185B-4725-AE5E-02DCB0872A07}
+		{10B311E0-23E2-4907-A0F3-DD6C58F09372} = {30F50737-185B-4725-AE5E-02DCB0872A07}
+		{A5909C76-6465-4D75-9B94-F1FE74A19DE6} = {10B311E0-23E2-4907-A0F3-DD6C58F09372}
 	EndGlobalSection
 EndGlobal

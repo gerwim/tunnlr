@@ -10,4 +10,6 @@ public class Tunnel
 
     [Required]
     public required string TargetUri { get; set; }
+
+    public ReservedDomain? ReservedDomain { get; set; }
 }
