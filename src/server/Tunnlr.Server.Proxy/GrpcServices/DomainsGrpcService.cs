@@ -29,18 +29,19 @@ public class DomainsGrpcService : Domains.DomainsBase
         }).Entity;
         
         var requestedPrefix = Core.Helpers.Domains.CleanInput(request.DomainPrefix);
+        var domain = Core.Helpers.Domains.ValidateAndConvertDomainLength($"{requestedPrefix}-{Guid.NewGuid().ToString()}");
         
-        var domain = new ReservedDomain
+        var reservedDomain = new ReservedDomain
         {
             UserId = user.UserId,
-            Domain = $"{requestedPrefix}-{Guid.NewGuid().ToString()}",
+            Domain = domain,
         };
-        _tunnlrServerDbContext.Add(domain);
+        _tunnlrServerDbContext.Add(reservedDomain);
         await _tunnlrServerDbContext.SaveChangesAsync().ConfigureAwait(false);
 
         return new CreateReservedDomainResponse
         {
-            Domain = domain.Domain,
+            Domain = reservedDomain.Domain,
         };
     }
 
