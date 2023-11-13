@@ -37,7 +37,7 @@ jobs:
           release_name="Tunnlr.Client.Web-$GITHUB_REF_NAME-${{ matrix.target }}"
 
           # Build everything
-          dotnet publish src/Tunnlr.Client.Web --runtime "${{ matrix.target }}" -c Release -o "$release_name"
+          dotnet publish src/client/Tunnlr.Client.Web --runtime "${{ matrix.target }}" -c Release -o "$release_name"
 
           # Pack files
           if [ "${{ matrix.target }}" == "win-x64" ]; then

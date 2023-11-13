@@ -5,10 +5,10 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["src/Tunnlr.Server.Proxy/Tunnlr.Server.Proxy.csproj", "src/Tunnlr.Server.Proxy/"]
-RUN dotnet restore "src/Tunnlr.Server.Proxy/Tunnlr.Server.Proxy.csproj"
+COPY ["src/server/Tunnlr.Server.Proxy/Tunnlr.Server.Proxy.csproj", "src/server/Tunnlr.Server.Proxy/"]
+RUN dotnet restore "src/server/Tunnlr.Server.Proxy/Tunnlr.Server.Proxy.csproj"
 COPY . .
-WORKDIR "/src/src/Tunnlr.Server.Proxy"
+WORKDIR "/src/src/server/Tunnlr.Server.Proxy"
 RUN dotnet build "Tunnlr.Server.Proxy.csproj" -c Release -o /app/build
 
 FROM build AS publish
