@@ -1,14 +1,10 @@
 using System.Security.Claims;
-using GerwimFeiken.Cache;
-using GerwimFeiken.Cache.InMemory;
-using GerwimFeiken.Cache.InMemory.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Tunnlr.Common.DependencyInjection;
 using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Options;
-using Tunnlr.Server.Core.Authentication;
 using Tunnlr.Server.Proxy;
 using Tunnlr.Server.Proxy.GrpcServices;
 
@@ -44,12 +40,6 @@ builder.Services.AddScoped<TunnelsGrpcService>();
 builder.Services.AddScoped<GeneralGrpcService>();
 builder.Services.AddScoped<DomainsGrpcService>();
 
-builder.Services.AddSingleton<ICache>(new InMemoryCache(new InMemoryOptions
-{
-    DefaultExpirationTtl = 3600
-}));
-builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddHttpClient<IAuthenticationService>();
 builder.Configuration.GetRequiredSection(Auth0Options.OptionKey).RegisterOptions<Auth0Options>(builder);
 
 // Run all builders
