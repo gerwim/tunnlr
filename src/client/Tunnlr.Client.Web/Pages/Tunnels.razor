@@ -8,6 +8,7 @@
 @inject TunnelService TunnelService
 @inject TunnlrClientDbContext ClientDbContext
 @inject IDialogService DialogService
+@inject NavigationManager Navigation
 <PageTitle>Tunnlr</PageTitle>
 @implements IDisposable
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-16 pt-16">
@@ -23,7 +24,7 @@
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Target URI">@context.TargetUri
-                @if (!string.IsNullOrWhiteSpace(context.ReservedDomain?.Domain))
+                @if (context.ReservedDomain is not null)
                 {
                     <MudIconButton Icon="@Icons.Material.Filled.Language" Style="opacity: 0.5" Href="/reserved-domains" />
                 }
@@ -56,6 +57,23 @@
 @code {
     private bool _loading = true;
     private bool _showCreateTunnel;
+    private bool _isAuthenticated = false;
+    
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        TunnelService.ChangedEvent += OnTunnelStateChange;
+        LoadData();
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var user = authState.User;
+
+            _isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+        }
+    }
 
     private void LoadData()
     {
@@ -115,13 +133,7 @@
         
         LoadData();
     }
-
-    protected override void OnInitialized()
-    {
-        TunnelService.ChangedEvent += OnTunnelStateChange;
-        LoadData();
-    }
-
+    
     private List<Tunnel> _tunnels = new();
 
     public void StartOrStopTunnel(Tunnel tunnel)
@@ -139,6 +151,12 @@
 
     private void CreateTunnel(Tunnel tunnel)
     {
+        if (tunnel.ReservedDomain is not null && !_isAuthenticated)
+        {
+            Navigation.NavigateTo("/login", true);
+            return;
+        }
+        
         TunnelService.CreateTunnel(tunnel);
     }
 
@@ -164,5 +182,5 @@
         {
             tunnel.ChangedEvent -= OnRequestsChange;
         }
-    } 
+    }
 }
