@@ -2,6 +2,7 @@ using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using MudBlazor.Services;
 using Tunnlr.Client.Core.Services;
+using Tunnlr.Client.Web;
 using Tunnlr.Client.Web.Extensions;
 using Tunnlr.Client.Web.Services;
 using Tunnlr.Common.DependencyInjection;
@@ -74,8 +75,9 @@ app.MapFallbackToPage("/_Host");
 // Run all configurations
 Configurators.RunAll(app);
 
-#if !DEBUG
+if (!app.Environment.IsDevelopment())
+{
     Browser.Start();
-#endif
+}
 
 app.Run();
