@@ -28,10 +28,12 @@ public class DomainsGrpcService : Domains.DomainsBase
             UserId = userId,
         }).Entity;
         
+        var requestedPrefix = Core.Helpers.Domains.CleanInput(request.DomainPrefix);
+        
         var domain = new ReservedDomain
         {
             UserId = user.UserId,
-            Domain = $"{request.DomainPrefix}-{Guid.NewGuid().ToString()}",
+            Domain = $"{requestedPrefix}-{Guid.NewGuid().ToString()}",
         };
         _tunnlrServerDbContext.Add(domain);
         await _tunnlrServerDbContext.SaveChangesAsync().ConfigureAwait(false);
