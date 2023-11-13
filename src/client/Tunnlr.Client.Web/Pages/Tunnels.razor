@@ -4,8 +4,10 @@
 @using Tunnlr.Client.Persistence
 @using Tunnlr.Client.Web.Components.AddTunnel
 @using Microsoft.EntityFrameworkCore
+@using Tunnlr.Client.Web.Components.Dialogs.GenericDialog
 @inject TunnelService TunnelService
 @inject TunnlrClientDbContext ClientDbContext
+@inject IDialogService DialogService
 <PageTitle>Tunnlr</PageTitle>
 @implements IDisposable
 <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-16 pt-16">
@@ -89,6 +91,19 @@
 
     private async Task DeleteTunnel(Tunnel tunnel)
     {
+        var parameters = new DialogParameters<GenericDialog>
+        {
+            { x => x.ContentText, "Are you sure you want to delete this tunnel?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialogReference = await DialogService.ShowAsync<GenericDialog>("Delete tunnel", parameters, options);
+        var result = await dialogReference.Result;
+        
+        if (result.Canceled) return;
+        
         if (tunnel.Status is not TunnelStatus.Stopped) DestroyTunnel(tunnel);
         
         var dbTunnel = await ClientDbContext.Tunnels.FindAsync(tunnel.TunnelId);

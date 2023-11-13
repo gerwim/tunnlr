@@ -7,6 +7,7 @@
 @using Tunnlr.Client.Web.Components.PremiumFeature
 @using Tunnlr.Client.Web.Components.RequiresLogin
 @using Microsoft.EntityFrameworkCore
+@using Tunnlr.Client.Web.Components.Dialogs.GenericDialog
 @inject IDialogService DialogService
 @inject DomainsService DomainsService
 @inject TunnlrClientDbContext TunnlrClientDbContext
@@ -93,6 +94,19 @@
 
     private async Task DeleteReservedDomain(ReservedDomain domain)
     {
+        var parameters = new DialogParameters<GenericDialog>
+        {
+            { x => x.ContentText, "Are you sure you want to delete this reserved domain?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialogReference = await DialogService.ShowAsync<GenericDialog>("Delete reserved domain", parameters, options);
+        var result = await dialogReference.Result;
+        
+        if (result.Canceled) return;
+        
         await DomainsService.DeleteReservedDomain(domain.Domain);
         await LoadData();
     }
