@@ -23,10 +23,10 @@ builder.Services.AddMudServices();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 var auth0Options = builder.Configuration.GetRequiredSection(Auth0Options.OptionKey).RegisterOptions<Auth0Options>(builder);
 
-builder.AddGrpcClient<Tunnels.TunnelsClient>();
-builder.AddGrpcClient<Requests.RequestsClient>();
-builder.AddGrpcClient<General.GeneralClient>();
-builder.AddGrpcClient<Domains.DomainsClient>();
+builder.AddGrpcClient<Tunnels.TunnelsClient>(true);
+builder.AddGrpcClient<Requests.RequestsClient>(false);
+builder.AddGrpcClient<General.GeneralClient>(false);
+builder.AddGrpcClient<Domains.DomainsClient>(true);
 
 // Configure authentication
 builder.Services.ConfigureSameSiteNoneCookies();

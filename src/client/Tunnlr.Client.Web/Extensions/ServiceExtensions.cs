@@ -7,7 +7,7 @@ namespace Tunnlr.Client.Web.Extensions;
 
 public static class ServiceExtensions
 {
-    public static void AddGrpcClient<T>(this WebApplicationBuilder builder) where T : class
+    public static void AddGrpcClient<T>(this WebApplicationBuilder builder, bool withCredentials) where T : class
     {
         var defaultMethodConfig = new MethodConfig
         {
@@ -25,7 +25,7 @@ public static class ServiceExtensions
             }
         };
 
-        builder.Services.AddGrpcClient<T>(options =>
+        var grpcClient = builder.Services.AddGrpcClient<T>(options =>
         {
             options.Address = new Uri(builder.Configuration.GetRequiredSection("Tunnlr:Client")
                                           .GetValue<string>("ApiServer") ??
@@ -35,19 +35,25 @@ public static class ServiceExtensions
             {
                 channelOptions.ServiceConfig = new ServiceConfig { MethodConfigs = { defaultMethodConfig } };
             });
-        }).AddCallCredentials(async (context, metadata, serviceProvider) =>
-        {
-            var authenticationService = serviceProvider.GetRequiredService<IAuthenticationService>();
-            var token = await authenticationService.GetAccessToken();
-            if (!string.IsNullOrEmpty(token))
-            {
-                metadata.Add("Authorization", $"Bearer {token}");
-            }
         }).ConfigureChannel(options =>
         {
 #if DEBUG
             options.UnsafeUseInsecureChannelCallCredentials = true;
 #endif
         });
+
+        if (withCredentials)
+        {
+            grpcClient.AddCallCredentials(async (context, metadata, serviceProvider) =>
+            {
+                using var scope = serviceProvider.CreateScope();
+                var authenticationService = scope.ServiceProvider.GetRequiredService<IAuthenticationService>();
+                var token = await authenticationService.GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    metadata.Add("Authorization", $"Bearer {token}");
+                }
+            });
+        }
     }
 }
