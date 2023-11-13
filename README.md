@@ -6,6 +6,7 @@ Tunnlr allows you to create tunnels to specific HTTP targets and inspect both re
 Features:
 * Multiple active tunnels support
 * Inspect HTTP requests and responses (headers and body)
+* Reserved domains
 * Fully self hostable (see [self-hosting.md](self-hosting.md))
 
 <a href="https://cdn.tunnlr.dev/tunnlr.png"><img src="https://cdn.tunnlr.dev/tunnlr.png"
@@ -16,6 +17,5 @@ Tunnlr is still in early development. If you encounter any issues, please create
 
 ## Roadmap
 * 🔐 protect tunnels by a password
-* 🌍 reserved domains
 * 💻 custom domains
 * ✏️ edit and replay requests from UI
