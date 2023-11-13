@@ -1,8 +1,6 @@
 @namespace Tunnlr.Client.Web.Components.Menu.ProfileIcon
 
 @using Tunnlr.Client.Web.Services
-@inject IAuthenticationService AuthenticationService;
-
 <MudMenu>
     <ActivatorContent>
         <MudAvatar Color="Color.Success" Style="width: 24px; height: 24px;">@AvatarName</MudAvatar>
@@ -22,11 +20,21 @@
 @code
 {
     public string AvatarName { get; set; } = "?";
+    
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        AvatarName = AuthenticationService.GetName()?[0].ToString() ?? "?";
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var user = authState.User;
 
-        return base.OnInitializedAsync();
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                AvatarName = user.Identity.Name?[0].ToString() ?? "?";
+            }
+        }
     }
 }
