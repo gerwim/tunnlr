@@ -22,7 +22,7 @@ Make sure you change the values regarding URL's before deployment.
 version: "3"
 services:
   caddy:
-    image: gerwim/caddy-docker-proxy-cloudflare:2.6.4
+    image: gerwim/caddy-docker-proxy-cloudflare:2.7.5
     ports:
       - 80:80
       - 443:443
@@ -34,6 +34,10 @@ services:
     image: ghcr.io/gerwim/tunnlr
     environment:
       - Tunnlr__Server__Proxy__ServedFromWildcard=https://*.tunnel.tunnlr.dev
+      - Tunnlr__Server__Persistence__Provider=sqlite # supports either 'sqlite' or 'postgresql'
+      - Tunnlr__Server__Persistence__ConnectionString=Data Source=App_Data/Tunnlr.Server.db
+    volumes:
+      - tunnlr_data:/app/App_Data
     restart: always
     labels:
       caddy_0: api.tunnlr.dev
@@ -44,4 +48,5 @@ services:
 
 volumes:
   caddy_data: {}
+  tunnlr_data: {}
 ```
