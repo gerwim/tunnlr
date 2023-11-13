@@ -1,8 +1,10 @@
 ﻿@using Tunnlr.Client.Web.Persistence
 @using Tunnlr.Client.Persistence
 @using Tunnlr.Client.Persistence.Models
+@using Tunnlr.Client.Core.Services
 @namespace Tunnlr.Client.Web.Components.AddTunnel
-@inject TunnlrClientDbContext ClientDbContext;
+@inject TunnelService TunnelService
+@inject ISnackbar Snackbar
 <MudPaper Class="pa-4">
     <MudForm Model="@_model"@bind-IsValid="@_success" @bind-Errors="@_errors">
         <MudTextField T="string" Label="Target URI" Required="true" @bind-Value="_model.TargetUri" Placeholder="https://127.0.0.1:8080" RequiredError="Target URI is required!" />
@@ -22,12 +24,16 @@
 
     private async Task Add()
     {
-        await ClientDbContext.AddAsync(new Tunnel
-        {
-            TargetUri = _model.TargetUri ?? string.Empty,
-        });
+        if (string.IsNullOrWhiteSpace(_model.TargetUri)) return;
 
-        await ClientDbContext.SaveChangesAsync();
-        OnUpdate?.Invoke();
+        try
+        {
+            await TunnelService.AddTunnel(_model.TargetUri);
+            OnUpdate?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
     }
 }

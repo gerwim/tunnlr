@@ -2,8 +2,10 @@ using System.Collections.Concurrent;
 using AsyncAwaitBestPractices;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Tunnlr.Client.Core.Exceptions;
 using Tunnlr.Client.Core.Handlers;
 using Tunnlr.Client.Core.Models;
+using Tunnlr.Client.Persistence;
 using Tunnlr.Common.Protobuf;
 
 namespace Tunnlr.Client.Core.Services;
@@ -13,12 +15,14 @@ public class TunnelService
     private readonly Tunnels.TunnelsClient _tunnelsClient;
     private readonly Requests.RequestsClient _requestsClient;
     private readonly ILogger<TunnelService> _logger;
+    private readonly TunnlrClientDbContext _tunnlrClientDbContext;
 
-    public TunnelService(Tunnels.TunnelsClient tunnelsClient, Requests.RequestsClient requestsClient, ILogger<TunnelService> logger)
+    public TunnelService(Tunnels.TunnelsClient tunnelsClient, Requests.RequestsClient requestsClient, ILogger<TunnelService> logger, TunnlrClientDbContext tunnlrClientDbContext)
     {
         _tunnelsClient = tunnelsClient;
         _requestsClient = requestsClient;
         _logger = logger;
+        _tunnlrClientDbContext = tunnlrClientDbContext;
     }
 
     public static ConcurrentDictionary<Guid, Tunnel> ActiveTunnels { get; } = new();
@@ -44,6 +48,33 @@ public class TunnelService
         {
             activeTunnel.CancellationTokenSource?.Cancel();
         }
+    }
+
+    public async Task AddTunnel(string target)
+    {
+        string? targetHost;
+        try
+        {
+            targetHost = ConvertToValidTarget(target);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Could not convert target uri");
+            throw new InvalidTunnelTargetException("You've entered an invalid target.", ex);
+        }
+        
+        await _tunnlrClientDbContext.AddAsync(new Tunnlr.Client.Persistence.Models.Tunnel
+        {
+            TargetUri = targetHost
+        }).ConfigureAwait(false);
+
+        await _tunnlrClientDbContext.SaveChangesAsync().ConfigureAwait(false);
+    }
+
+    private string ConvertToValidTarget(string target)
+    {
+        var uri = new Uri(target);
+        return uri.GetLeftPart(UriPartial.Authority);
     }
     
     private async Task CreateTunnel(Tunnel tunnel, CancellationToken cancellationToken)
