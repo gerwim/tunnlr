@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace Tunnlr.Client.Core.Models;
 
 public class Tunnel
@@ -13,7 +15,7 @@ public class Tunnel
 
     public CancellationTokenSource? CancellationTokenSource { get; set; }
 
-    public Dictionary<Request, Response?> Requests { get; set; } = new();
+    public ConcurrentDictionary<Request, Response?> Requests { get; set; } = new();
     
     public event EventHandler<EventArgs>? ChangedEvent;
     public void NotifyChanged(object? sender, EventArgs e)
