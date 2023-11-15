@@ -5,9 +5,8 @@ namespace Tunnlr.Client.Web;
 
 public static class Browser
 {
-    public static void Start()
+    public static void Start(string url)
     {
-        const string url = "http://localhost:5109";
         try
         {
             Process.Start(url);
