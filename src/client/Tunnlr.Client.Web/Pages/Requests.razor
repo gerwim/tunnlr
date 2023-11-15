@@ -26,7 +26,14 @@
                     <MudListItem Value="tunnelHttpRequest.Key">
                         <MudContainer Class="d-flex justify-space-between">
                             <MudText Color="Color.Primary">@($"{tunnelHttpRequest.Key.HttpRequest.HttpMethod} {new Uri(tunnelHttpRequest.Key.HttpRequest.TargetUri).PathAndQuery}")</MudText>
-                            <MudText Color="Color.Secondary">@($"{tunnelHttpRequest.Key.DateTime:HH:mm:ss}")</MudText>
+                            @if (tunnelHttpRequest.Value is null)
+                            {
+                                <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                <MudText Color="Color.Secondary">@($"{Helpers.RequestDurationFormatter.FormatRequestDuration(tunnelHttpRequest.Key.DateTime, tunnelHttpRequest.Value.DateTime)}")</MudText>
+                            }
                         </MudContainer>
                     </MudListItem>
                 }
