@@ -21,7 +21,7 @@
     <MudStack Row="true" Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Stretch">
         <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 90vh;">
             <MudList Clickable="true" @bind-SelectedValue="selectedValue" Color="Color.Primary">
-                @foreach (var tunnelHttpRequest in Tunnel.Requests.OrderByDescending(x => x.Key.DateTime))
+                @foreach (var tunnelHttpRequest in Tunnel.Requests.ToArray().OrderByDescending(x => x.Key.DateTime))
                 {
                     <MudListItem @key="tunnelHttpRequest.Key.HttpRequest.Id" Value="tunnelHttpRequest.Key">
                         <MudContainer Class="d-flex justify-space-between">
