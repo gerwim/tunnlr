@@ -17,9 +17,18 @@
         
         return;
     }
-
+    
+    <MudContainer Class=" d-flex flex-column align-end mr-0 pr-0 pb-2">
+        <MudButton Variant="Variant.Outlined"
+                   EndIcon="@Icons.Material.Filled.Clear"
+                   Color="Color.Tertiary"
+                   OnClick="@ClearRequests"
+                   >
+            Clear requests
+        </MudButton>
+    </MudContainer>
     <MudStack Row="true" Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Stretch">
-        <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 90vh;">
+        <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 85vh;">
             <MudList Clickable="true" @bind-SelectedValue="selectedValue" Color="Color.Primary">
                 @foreach (var tunnelHttpRequest in Tunnel.Requests.ToArray().OrderByDescending(x => x.Key.DateTime))
                 {
@@ -47,7 +56,7 @@
         </MudPaper>
         @if (selectedValue is Request request && Tunnel.Requests.TryGetValue(request, out var response))
         {
-            <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 90vh;">
+            <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 85vh;">
                 <h2>@request.Title</h2>
                 <MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
                     <MudTabPanel Text="Request headers">
@@ -118,5 +127,18 @@
     public void Dispose()
     {
         if (Tunnel is not null) Tunnel.ChangedEvent -= OnTunnelStateChange;
+    }
+    
+    /// <summary>
+    /// Clears completed requests.
+    /// </summary>
+    private void ClearRequests()
+    {
+        var completedRequests = Tunnel?.Requests.Where(x => x.Value is not null).ToArray() ?? Array.Empty<KeyValuePair<Request, Response?>>();
+
+        foreach (var request in completedRequests)
+        {
+            Tunnel?.Requests.TryRemove(request);
+        }
     }
 }
