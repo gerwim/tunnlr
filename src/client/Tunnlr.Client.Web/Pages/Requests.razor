@@ -25,10 +25,16 @@
                 {
                     <MudListItem @key="tunnelHttpRequest.Key.HttpRequest.Id" Value="tunnelHttpRequest.Key">
                         <MudContainer Class="d-flex justify-space-between">
-                            <MudText Color="Color.Primary">@($"{tunnelHttpRequest.Key.HttpRequest.HttpMethod} {new Uri(tunnelHttpRequest.Key.HttpRequest.TargetUri).PathAndQuery}")</MudText>
+                            <MudContainer>
+                                <MudText Color="Color.Primary">@tunnelHttpRequest.Key.Title</MudText>
+                                @if (!string.IsNullOrWhiteSpace(tunnelHttpRequest.Key.SubTitle))
+                                {
+                                    <MudText Typo="Typo.subtitle2" Style="color: rgba(97, 97, 97, 0.6);">@tunnelHttpRequest.Key.SubTitle</MudText>
+                                }
+                            </MudContainer>
                             @if (tunnelHttpRequest.Value is null)
                             {
-                                <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" />
+                                <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true"/>
                             }
                             else
                             {
@@ -42,7 +48,7 @@
         @if (selectedValue is Request request && Tunnel.Requests.TryGetValue(request, out var response))
         {
             <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 90vh;">
-                <h2>@request.HttpRequest.HttpMethod @(new Uri(request.HttpRequest.TargetUri).PathAndQuery)</h2>
+                <h2>@request.Title</h2>
                 <MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
                     <MudTabPanel Text="Request headers">
                         <MudSimpleTable Dense Hover Style="overflow-x: auto;">

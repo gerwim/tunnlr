@@ -3,6 +3,9 @@ namespace Tunnlr.Client.Core.Models;
 public class RequestBase
 {
     public DateTime DateTime { get; } = DateTime.Now;
+
+    public string? Title { get; set; }
+    public string? SubTitle { get; set; }
     
     public List<byte> Body { get; } = new();
     public bool BodyTruncated { get; set; }

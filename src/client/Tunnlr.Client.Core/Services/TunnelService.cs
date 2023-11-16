@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using AsyncAwaitBestPractices;
 using Grpc.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Tunnlr.Client.Core.Exceptions;
 using Tunnlr.Client.Core.Handlers;
@@ -111,7 +112,7 @@ public class TunnelService
                         NotifyChanged(this, EventArgs.Empty);
                         break;
                     case CreateTunnelStreamResponse.DataOneofCase.OpenRequestStream:
-                        var requestHandler = new RequestHandler(_requestsClient, _logger, _serviceProvider);
+                        var requestHandler = ActivatorUtilities.CreateInstance<RequestHandler>(_serviceProvider);
                         requestHandler.OpenRequestStream(tunnel, cancellationToken, response).SafeFireAndForget(ex => _logger.LogError(ex, "Error opening request stream"));
                         break;
                 }

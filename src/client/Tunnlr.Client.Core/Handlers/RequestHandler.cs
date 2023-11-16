@@ -2,6 +2,7 @@ using AsyncAwaitBestPractices;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Tunnlr.Client.Core.Formatters;
 using Tunnlr.Client.Core.Models;
 using Tunnlr.Client.Core.Services;
 using Tunnlr.Common.Protobuf;
@@ -12,14 +13,18 @@ namespace Tunnlr.Client.Core.Handlers;
 public class RequestHandler
 {
     private readonly Requests.RequestsClient _requestsClient;
+    private readonly IBaseRequestFormatter _requestFormatter;
+    private readonly IBaseResponseFormatter _responseFormatter;
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger _logger;
+    private readonly ILogger<RequestHandler> _logger;
 
-    public RequestHandler(Requests.RequestsClient requestsClient, ILogger logger, IServiceProvider serviceProvider)
+    public RequestHandler(Requests.RequestsClient requestsClient, ILogger<RequestHandler> logger, IServiceProvider serviceProvider, IBaseRequestFormatter requestFormatter, IBaseResponseFormatter responseFormatter)
     {
         _requestsClient = requestsClient;
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _requestFormatter = requestFormatter;
+        _responseFormatter = responseFormatter;
     }
 
     private BlockingStream BlockingStream { get; } = new();
@@ -57,16 +62,14 @@ public class RequestHandler
                     {
                         var result = requestStreamResponse.HttpRequest;
 
-                        Request = new Request
-                        {
-                            HttpRequest = result,
-                        };
+                        Request = new Request(result);
+                        
                         tunnel.Requests.TryAdd(Request, null);
                        
                         tunnel.NotifyChanged(this, EventArgs.Empty);
                         var httpRequestResult = Http.InvokeRequest(result, BlockingStream, linkedCts.Token, _serviceProvider);
 
-                        HandleOutgoingRequest(tunnel, linkedCts.Token, httpRequestResult, requestStream, Request, _serviceProvider)
+                        HandleOutgoingRequest(tunnel, linkedCts.Token, httpRequestResult, requestStream)
                             .SafeFireAndForget(ex => _logger.LogError(ex, "Error handling outgoing request"));
                         break;
                     }
@@ -82,6 +85,8 @@ public class RequestHandler
                     case ServerMessage.DataOneofCase.HttpRequestFinished:
                     {
                         BlockingStream.SetEndOfStream();
+                        // Format request
+                        _requestFormatter.Format(Request!);
                         tunnel.NotifyChanged(this, EventArgs.Empty);
                         break;
                     }
@@ -97,10 +102,9 @@ public class RequestHandler
         }
     }
 
-    private static async Task HandleOutgoingRequest(Tunnel tunnel, CancellationToken cancellationToken,
+    private async Task HandleOutgoingRequest(Tunnel tunnel, CancellationToken cancellationToken,
         Task<HttpInvokeRequestResult> httpTask,
-        AsyncDuplexStreamingCall<ClientMessage, ServerMessage> requestStream, Request request,
-        IServiceProvider serviceProvider)
+        AsyncDuplexStreamingCall<ClientMessage, ServerMessage> requestStream)
     {
         var httpResponse = await httpTask.ConfigureAwait(false);
         
@@ -111,10 +115,7 @@ public class RequestHandler
 
         if (httpResponse.Response is null || httpResponse.Stream is null) throw new Exception("Cancel");
 
-        var response = new Response
-        {
-            HttpResponse = httpResponse.Response
-        };
+        var response = new Response(httpResponse.Response);
 
         // Write the response stream back into the buffer and stream it back to the server
         int bytesRead;
@@ -145,7 +146,10 @@ public class RequestHandler
         // Set response value to request
         if (TunnelService.ActiveTunnels.TryGetValue(tunnel.TunnelId, out var activeTunnel))
         {
-            activeTunnel.Requests[request] = response;
+            activeTunnel.Requests[Request!] = response;
+            // Format response
+            _responseFormatter.Format(response);
+            
             tunnel.NotifyChanged(null, EventArgs.Empty);
         }
     }
