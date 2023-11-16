@@ -6,8 +6,11 @@ public class HelperTests
 {
     [Theory]
     [InlineData(500, "500ms")]
+    [InlineData(1500, "1.5s")]
+    [InlineData(1750, "1.8s")]
     [InlineData(30*1000, "30s")]
     [InlineData(60*1000, "1m")]
+    [InlineData(60001, "1m")]
     [InlineData(90*1000, "1m30s")]
     [InlineData(500*1000, "8m20s")]
     [InlineData(3660*1000, "1h1m")]
