@@ -1,5 +1,7 @@
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Tunnlr.Client.Core.Models;
+using Tunnlr.Client.Core.RequestPipeline.Core;
 using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Protobuf;
 using HttpMethod = Tunnlr.Common.Protobuf.HttpMethod;
@@ -14,7 +16,8 @@ public static class Http
         ServerCertificateCustomValidationCallback = (_, _, _, _) => true, // TODO: allow configuration per tunnel
     });
     
-    public static async Task<HttpInvokeRequestResult> InvokeRequest(HttpRequest request, Stream body, CancellationToken cancellationToken)
+    public static async Task<HttpInvokeRequestResult> InvokeRequest(HttpRequest request, Stream body,
+        CancellationToken cancellationToken, IServiceProvider serviceProvider)
     {
         try
         {
@@ -52,6 +55,11 @@ public static class Http
                     requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
             }
+            
+            // Execute request middleware
+            using var scope = serviceProvider.CreateScope();
+            var executor = scope.ServiceProvider.GetRequiredService<IRequestPipelineExecutor>();
+            await executor.ExecuteAsync(requestMessage).ConfigureAwait(false);
 
             var result = await HttpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
@@ -63,6 +71,7 @@ public static class Http
             };
             
             Common.Helpers.MapHeaders(result.Headers, result.Content.Headers, response.Headers);
+            
             return new HttpInvokeRequestResult
             {
                 Response = response,

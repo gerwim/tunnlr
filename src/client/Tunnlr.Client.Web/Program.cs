@@ -1,6 +1,7 @@
 using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using MudBlazor.Services;
+using Tunnlr.Client.Core.RequestPipeline;
 using Tunnlr.Client.Core.Services;
 using Tunnlr.Client.Web;
 using Tunnlr.Client.Web.Extensions;
@@ -46,6 +47,8 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddRequestPipelineExecutor();
 
 // Run all builders
 Builders.RunAll(builder);

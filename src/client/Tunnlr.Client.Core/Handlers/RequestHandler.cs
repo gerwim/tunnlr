@@ -12,12 +12,14 @@ namespace Tunnlr.Client.Core.Handlers;
 public class RequestHandler
 {
     private readonly Requests.RequestsClient _requestsClient;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger _logger;
 
-    public RequestHandler(Requests.RequestsClient requestsClient, ILogger logger)
+    public RequestHandler(Requests.RequestsClient requestsClient, ILogger logger, IServiceProvider serviceProvider)
     {
         _requestsClient = requestsClient;
         _logger = logger;
+        _serviceProvider = serviceProvider;
     }
 
     private BlockingStream BlockingStream { get; } = new();
@@ -45,8 +47,7 @@ public class RequestHandler
                     ServedFrom = response.OpenRequestStream.ServedFrom,
                 }
             }, linkedCts.Token).ConfigureAwait(false);
-
-
+            
             await foreach (var requestStreamResponse in requestStream.ResponseStream.ReadAllAsync(
                                cancellationToken: linkedCts.Token).ConfigureAwait(false))
             {
@@ -61,10 +62,11 @@ public class RequestHandler
                             HttpRequest = result,
                         };
                         tunnel.Requests.TryAdd(Request, null);
+                       
                         tunnel.NotifyChanged(this, EventArgs.Empty);
-                        var httpRequestResult = Http.InvokeRequest(result, BlockingStream, linkedCts.Token);
+                        var httpRequestResult = Http.InvokeRequest(result, BlockingStream, linkedCts.Token, _serviceProvider);
 
-                        HandleOutgoingRequest(tunnel, linkedCts.Token, httpRequestResult, requestStream, Request)
+                        HandleOutgoingRequest(tunnel, linkedCts.Token, httpRequestResult, requestStream, Request, _serviceProvider)
                             .SafeFireAndForget(ex => _logger.LogError(ex, "Error handling outgoing request"));
                         break;
                     }
@@ -97,7 +99,8 @@ public class RequestHandler
 
     private static async Task HandleOutgoingRequest(Tunnel tunnel, CancellationToken cancellationToken,
         Task<HttpInvokeRequestResult> httpTask,
-        AsyncDuplexStreamingCall<ClientMessage, ServerMessage> requestStream, Request request)
+        AsyncDuplexStreamingCall<ClientMessage, ServerMessage> requestStream, Request request,
+        IServiceProvider serviceProvider)
     {
         var httpResponse = await httpTask.ConfigureAwait(false);
         

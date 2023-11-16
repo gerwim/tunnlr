@@ -16,13 +16,15 @@ public class TunnelService
     private readonly Requests.RequestsClient _requestsClient;
     private readonly ILogger<TunnelService> _logger;
     private readonly TunnlrClientDbContext _tunnlrClientDbContext;
+    private readonly IServiceProvider _serviceProvider;
 
-    public TunnelService(Tunnels.TunnelsClient tunnelsClient, Requests.RequestsClient requestsClient, ILogger<TunnelService> logger, TunnlrClientDbContext tunnlrClientDbContext)
+    public TunnelService(Tunnels.TunnelsClient tunnelsClient, Requests.RequestsClient requestsClient, ILogger<TunnelService> logger, TunnlrClientDbContext tunnlrClientDbContext, IServiceProvider serviceProvider)
     {
         _tunnelsClient = tunnelsClient;
         _requestsClient = requestsClient;
         _logger = logger;
         _tunnlrClientDbContext = tunnlrClientDbContext;
+        _serviceProvider = serviceProvider;
     }
 
     public static ConcurrentDictionary<Guid, Tunnel> ActiveTunnels { get; } = new();
@@ -109,7 +111,7 @@ public class TunnelService
                         NotifyChanged(this, EventArgs.Empty);
                         break;
                     case CreateTunnelStreamResponse.DataOneofCase.OpenRequestStream:
-                        var requestHandler = new RequestHandler(_requestsClient, _logger);
+                        var requestHandler = new RequestHandler(_requestsClient, _logger, _serviceProvider);
                         requestHandler.OpenRequestStream(tunnel, cancellationToken, response).SafeFireAndForget(ex => _logger.LogError(ex, "Error opening request stream"));
                         break;
                 }
