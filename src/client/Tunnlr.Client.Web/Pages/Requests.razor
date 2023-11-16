@@ -5,7 +5,7 @@
 @implements IDisposable
 
 <PageTitle>Tunnlr</PageTitle>
-<MudContainer MaxWidth="MaxWidth.False" Class="my-16 pt-16">
+<MudContainer MaxWidth="MaxWidth.False" Class="pt-8">
 
     <h3>Requests</h3>
 
@@ -19,7 +19,7 @@
     }
 
     <MudStack Row="true" Justify="Justify.SpaceEvenly" AlignItems="AlignItems.Stretch">
-        <MudPaper Class="pe-4" Width="50%" MaxWidth="50%">
+        <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 90vh;">
             <MudList Clickable="true" @bind-SelectedValue="selectedValue" Color="Color.Primary">
                 @foreach (var tunnelHttpRequest in Tunnel.Requests.OrderByDescending(x => x.Key.DateTime))
                 {
@@ -41,7 +41,7 @@
         </MudPaper>
         @if (selectedValue is Request request && Tunnel.Requests.TryGetValue(request, out var response))
         {
-            <MudPaper Class="pe-4" Width="50%" MaxWidth="50%">
+            <MudPaper Class="pe-4 overflow-y-scroll" Width="50%" MaxWidth="50%" Style="height: 90vh;">
                 <h2>@request.HttpRequest.HttpMethod @(new Uri(request.HttpRequest.TargetUri).PathAndQuery)</h2>
                 <MudTabs Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
                     <MudTabPanel Text="Request headers">
