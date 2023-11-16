@@ -23,7 +23,7 @@
             <MudList Clickable="true" @bind-SelectedValue="selectedValue" Color="Color.Primary">
                 @foreach (var tunnelHttpRequest in Tunnel.Requests.OrderByDescending(x => x.Key.DateTime))
                 {
-                    <MudListItem Value="tunnelHttpRequest.Key">
+                    <MudListItem @key="tunnelHttpRequest.Key.HttpRequest.Id" Value="tunnelHttpRequest.Key">
                         <MudContainer Class="d-flex justify-space-between">
                             <MudText Color="Color.Primary">@($"{tunnelHttpRequest.Key.HttpRequest.HttpMethod} {new Uri(tunnelHttpRequest.Key.HttpRequest.TargetUri).PathAndQuery}")</MudText>
                             @if (tunnelHttpRequest.Value is null)
