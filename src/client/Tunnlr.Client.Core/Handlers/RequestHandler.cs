@@ -134,15 +134,7 @@ public class RequestHandler
                 }
             }, cancellationToken).ConfigureAwait(false);
         }
-
-        await requestStream.RequestStream.WriteAsync(new ClientMessage
-        {
-            HttpRequestFinished = new HttpRequestFinished
-            {
-                RequestId = httpResponse.Response.HttpRequestId,
-            }
-        }, cancellationToken).ConfigureAwait(false);
-
+        
         // Set response value to request
         if (TunnelService.ActiveTunnels.TryGetValue(tunnel.TunnelId, out var activeTunnel))
         {
@@ -152,5 +144,13 @@ public class RequestHandler
             
             tunnel.NotifyChanged(null, EventArgs.Empty);
         }
+
+        await requestStream.RequestStream.WriteAsync(new ClientMessage
+        {
+            HttpRequestFinished = new HttpRequestFinished
+            {
+                RequestId = httpResponse.Response.HttpRequestId,
+            }
+        }, cancellationToken).ConfigureAwait(false);
     }
 }
