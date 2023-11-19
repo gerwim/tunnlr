@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Tunnlr.Client.Utilities;
 using Tunnlr.Common.DependencyInjection;
 
 namespace Tunnlr.Client.Persistence;
@@ -12,8 +13,7 @@ public class Builder : IBuilder
     {
         builder.Services.AddDbContext<TunnlrClientDbContext>(options =>
         {
-            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Tunnlr");
-            Directory.CreateDirectory(directory);
+            var directory = Storage.GetTunnlrStorageDirectory();
             var connectionStringBuilder = new SqliteConnectionStringBuilder($"Data Source={Path.Combine(directory, "Tunnlr.Client.Web.db")}"); 
             options.UseSqlite(connectionStringBuilder.ToString(), sqliteOptions =>
             {

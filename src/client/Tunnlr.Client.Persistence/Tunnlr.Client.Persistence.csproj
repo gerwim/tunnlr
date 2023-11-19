@@ -16,6 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Tunnlr.Common\Tunnlr.Common.csproj" />
+      <ProjectReference Include="..\Tunnlr.Client.Utilities\Tunnlr.Client.Utilities.csproj" />
     </ItemGroup>
 
     <ItemGroup>
