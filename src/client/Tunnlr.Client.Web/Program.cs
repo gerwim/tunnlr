@@ -15,9 +15,10 @@ using Tunnlr.Common.Protobuf;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var clientConfiguration = builder.Configuration.GetRequiredSection(Options.OptionKey).RegisterOptions<Options>(builder);
 builder.WebHost.UseKestrel(options =>
 {
-    options.Listen(IPAddress.Any, 5109,
+    options.Listen(IPAddress.Parse(clientConfiguration.GetRequiredValue(x => x.ListenAddress)), (int) clientConfiguration.GetRequiredValue(x => x.ListenPort),
         listenOptions =>
         {
             listenOptions.UseHttps(Certificate.GetSelfSignedCertificate());
@@ -91,7 +92,7 @@ Configurators.RunAll(app);
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-var url = "https://127.0.0.1:5109";
+var url = $"https://{clientConfiguration.GetRequiredValue(x => x.ListenAddress)}:{clientConfiguration.GetRequiredValue(x => x.ListenPort)}";
 if (!app.Environment.IsDevelopment())
 {
     try

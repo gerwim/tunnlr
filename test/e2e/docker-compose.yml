@@ -9,6 +9,7 @@ services:
       - 5109:5109
     environment:
      - Tunnlr__Client__ApiServer=http://tunnlr-proxy:5107
+     - Tunnlr__Client__ListenAddress=0.0.0.0
      - Tunnlr__Client__UnsafeUseInsecureChannelCallCredentials=true
   tunnlr-proxy:
     image: tunnlr-proxy
