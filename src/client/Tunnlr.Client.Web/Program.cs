@@ -78,16 +78,25 @@ app.MapFallbackToPage("/_Host");
 // Run all configurations
 Configurators.RunAll(app);
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
 var url = app.Configuration.GetRequiredSection("Kestrel:Endpoints:Web").GetValue<string>("Url");
 if (string.IsNullOrWhiteSpace(url))
 {
-    app.Services.GetRequiredService<ILogger<Program>>().LogError("Can't find url to listen on");
+    logger.LogError("Can't find url to listen on");
     return;
 }
 
 if (!app.Environment.IsDevelopment())
 {
-    Browser.Start(url);
+    try
+    {
+        Browser.Start(url);
+    }
+    catch (Exception ex)
+    {
+        logger.LogWarning(ex, "Could not start a browser");
+    }
 }
 
 Console.WriteLine($"Tunnlr started on {url}");
