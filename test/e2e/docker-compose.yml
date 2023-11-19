@@ -1,0 +1,21 @@
+version: "3"
+services:
+  tunnlr-client:
+    image: tunnlr-client
+    build:
+      context: ../../
+      dockerfile: Dockerfile.Client
+    ports:
+      - 5109:5109
+    environment:
+     - Tunnlr__Client__ApiServer=http://tunnlr-proxy:5107
+     - Tunnlr__Client__UnsafeUseInsecureChannelCallCredentials=true
+  tunnlr-proxy:
+    image: tunnlr-proxy
+    build:
+      context: ../../
+      dockerfile: Dockerfile.Proxy
+    environment:
+      - Tunnlr__Server__Proxy__ServedFromWildcard=http://*.tunnel.tunnlr-development.com:5108
+      - Tunnlr__Server__Persistence__Provider=sqlite # supports either 'sqlite' or 'postgresql'
+      - Tunnlr__Server__Persistence__ConnectionString=Data Source=Tunnlr.Server.db
