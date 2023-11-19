@@ -14,15 +14,13 @@ namespace Tunnlr.Client.Core.Services;
 public class TunnelService
 {
     private readonly Tunnels.TunnelsClient _tunnelsClient;
-    private readonly Requests.RequestsClient _requestsClient;
     private readonly ILogger<TunnelService> _logger;
     private readonly TunnlrClientDbContext _tunnlrClientDbContext;
     private readonly IServiceProvider _serviceProvider;
 
-    public TunnelService(Tunnels.TunnelsClient tunnelsClient, Requests.RequestsClient requestsClient, ILogger<TunnelService> logger, TunnlrClientDbContext tunnlrClientDbContext, IServiceProvider serviceProvider)
+    public TunnelService(Tunnels.TunnelsClient tunnelsClient, ILogger<TunnelService> logger, TunnlrClientDbContext tunnlrClientDbContext, IServiceProvider serviceProvider)
     {
         _tunnelsClient = tunnelsClient;
-        _requestsClient = requestsClient;
         _logger = logger;
         _tunnlrClientDbContext = tunnlrClientDbContext;
         _serviceProvider = serviceProvider;

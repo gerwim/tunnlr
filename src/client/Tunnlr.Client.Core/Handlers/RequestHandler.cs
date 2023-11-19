@@ -2,6 +2,7 @@ using AsyncAwaitBestPractices;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using Tunnlr.Client.Core.Exceptions;
 using Tunnlr.Client.Core.Formatters;
 using Tunnlr.Client.Core.Models;
 using Tunnlr.Client.Core.Services;
@@ -113,7 +114,7 @@ public class RequestHandler
             HttpResponse = httpResponse.Response
         }, cancellationToken).ConfigureAwait(false);
 
-        if (httpResponse.Response is null || httpResponse.Stream is null) throw new Exception("Cancel");
+        if (httpResponse.Response is null || httpResponse.Stream is null) throw new OutgoingRequestException("Cancel outgoing request: there is neither a response or a stream");
 
         var response = new Response(httpResponse.Response);
 

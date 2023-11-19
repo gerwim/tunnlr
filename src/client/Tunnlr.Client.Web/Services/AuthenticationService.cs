@@ -27,6 +27,14 @@ public class AuthenticationService : IAuthenticationService
 
     public Task<string?> GetAccessToken()
     {
-        return _httpContextAccessor.HttpContext!.GetTokenAsync("access_token");
+        try
+        {
+            return _httpContextAccessor.HttpContext!.GetTokenAsync("access_token");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Could not retrieve access token");
+            return Task.FromResult<string?>(null);
+        }
     }
 }

@@ -16,7 +16,7 @@ public static class Auth0
 
     private static void CheckSameSite(CookieOptions options)
     {
-        if (options.SameSite == SameSiteMode.None && options.Secure == false)
+        if (options is { SameSite: SameSiteMode.None, Secure: false })
         {
             options.SameSite = SameSiteMode.Unspecified;
         }

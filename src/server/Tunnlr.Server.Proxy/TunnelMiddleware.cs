@@ -36,7 +36,7 @@ public class TunnelMiddleware
 
             foreach (var httpRequestHeader in context.Request.Headers)
             {
-                request.Headers.Add(httpRequestHeader.Key, httpRequestHeader.Value.First());
+                request.Headers.Add(httpRequestHeader.Key, httpRequestHeader.Value[0]);
             }
             
             // Insert current context

@@ -10,16 +10,14 @@ namespace Tunnlr.Server.Proxy.GrpcServices;
 
 public class TunnelsGrpcService : Tunnels.TunnelsBase
 {
-    private readonly ILogger<TunnelsGrpcService> _logger;
     private readonly IReservedDomainsService _reservedDomainService;
     private static readonly ConcurrentDictionary<string, Tunnel> ActiveTunnels = new();
     
     private readonly string _servedFromWildcard;
     private string? ServedFrom { get; set; }
 
-    public TunnelsGrpcService(ILogger<TunnelsGrpcService> logger, IConfiguration configuration, IReservedDomainsService reservedDomainService)
+    public TunnelsGrpcService(IConfiguration configuration, IReservedDomainsService reservedDomainService)
     {
-        _logger = logger;
         _reservedDomainService = reservedDomainService;
         _servedFromWildcard = configuration.GetRequiredSection("Tunnlr:Server:Proxy")
             .GetValue<string>("ServedFromWildcard") ?? throw new InvalidConfigurationException("Option value Tunnlr:Server:Proxy:ServedFromWildcard is missing");

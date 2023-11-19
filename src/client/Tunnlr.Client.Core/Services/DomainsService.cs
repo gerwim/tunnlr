@@ -11,12 +11,10 @@ public class DomainsService
 {
     private readonly Domains.DomainsClient _domainsClient;
     private readonly TunnlrClientDbContext _tunnlrClientDbContext;
-    private readonly ILogger<DomainsService> _logger;
 
-    public DomainsService(Domains.DomainsClient domainsClient, ILogger<DomainsService> logger, TunnlrClientDbContext tunnlrClientDbContext)
+    public DomainsService(Domains.DomainsClient domainsClient, TunnlrClientDbContext tunnlrClientDbContext)
     {
         _domainsClient = domainsClient;
-        _logger = logger;
         _tunnlrClientDbContext = tunnlrClientDbContext;
     }
 
@@ -54,7 +52,7 @@ public class DomainsService
     {
         var localDomains = _tunnlrClientDbContext.ReservedDomains.AsTracking().ToList();
 
-        var insert = remoteDomains.Where(x => localDomains.All(l => l.Domain != x));
+        var insert = remoteDomains.Where(x => localDomains.TrueForAll(l => l.Domain != x));
         var delete = localDomains.Where(x => !remoteDomains.Contains(x.Domain));
         
         foreach (var domain in insert)

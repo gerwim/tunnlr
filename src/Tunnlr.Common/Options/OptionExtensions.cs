@@ -75,7 +75,6 @@ public static class OptionExtensions
         {
             MemberExpression memberExpression => memberExpression.Member.Name,
             UnaryExpression unaryExpression => GetNameFromMemberExpression(unaryExpression.Operand),
-            // ConditionalExpression conditionalExpression => Expression.Lambda<Func<string>>(conditionalExpression).Compile()(), // TODO: implement this (see other todo in Infrastructure/Olympia.ApiGateway.Infrastructure.Common/Builder.cs)
             _ => throw new InvalidConfigurationException($"Invalid property type, this exception should never happen.")
         };
     }

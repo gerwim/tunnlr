@@ -29,7 +29,7 @@ public static class AssemblyScanner
         {
             if (scanAssembliesStartsWith.Length == 1)
             {
-                string searchPattern = $"{scanAssembliesStartsWith.First()}*.dll";
+                string searchPattern = $"{scanAssembliesStartsWith[0]}*.dll";
                 string[] assemblyPaths = Directory.GetFiles(appDllsDirectory, searchPattern, SearchOption.AllDirectories);
                 assembliesToBeLoaded.AddRange(assemblyPaths);
             }
