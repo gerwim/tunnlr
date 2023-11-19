@@ -1,0 +1,128 @@
+﻿@page "/tunnels/{tunnelId:guid}/interceptors"
+@using Tunnlr.Client.Core.Services
+@using Tunnlr.Client.Persistence.Models
+@using Tunnlr.Client.Web.Components.Dialogs.GenericDialog
+@using Tunnlr.Client.Features.Interceptors
+@using Tunnlr.Client.Features.Interceptors.Core
+@using Tunnlr.Client.Web.Components.Dialogs.AddInterceptorDialog
+@using Tunnlr.Client.Web.Components.Dialogs.UpdateInterceptorDialog
+@using Tunnlr.Client.Web.Components.Interceptors
+@inject IDialogService DialogService
+@inject InterceptorService InterceptorService
+@inject IServiceProvider ServiceProvider
+@inject ISnackbar Snackbar
+<PageTitle>Tunnlr</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-16 pt-16">
+    <h3>Request interceptors</h3>
+    <InterceptorsTable
+        Loading="_loading"
+        DeleteInterceptor="DeleteInterceptor"
+        SetInterceptorState="SetInterceptorState"
+        ShowUpdateInterceptorDialog="ShowUpdateInterceptorDialog"
+        ViewData="@_interceptorEntities.Where(x => x.Type == InterceptorsTable.InterceptorTableViewData.InterceptorType.Request)"
+     />
+    <MudButton OnClick="() => ShowAddInterceptorDialog<IRequestInterceptor>()">Add request interceptor</MudButton>
+</MudContainer>
+
+<MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="my-16">
+    <h3>Response interceptors</h3>
+    <InterceptorsTable
+            Loading="_loading"
+            DeleteInterceptor="DeleteInterceptor"
+            SetInterceptorState="SetInterceptorState"
+            ShowUpdateInterceptorDialog="ShowUpdateInterceptorDialog"
+            ViewData="@_interceptorEntities.Where(x => x.Type == InterceptorsTable.InterceptorTableViewData.InterceptorType.Response)"
+         />
+    <MudButton OnClick="() => ShowAddInterceptorDialog<IResponseInterceptor>()">Add response interceptor</MudButton>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public Guid TunnelId { get; set; }
+    
+    private bool _loading = true;
+    private readonly List<InterceptorsTable.InterceptorTableViewData> _interceptorEntities = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _interceptorEntities.Clear();
+        _interceptorEntities.AddRange(InterceptorService.GetInterceptorEntities(TunnelId).Select(x =>
+        {
+            var interceptor = InterceptorFactory.FromType(ServiceProvider, Type.GetType(x.TypeName)!, x.Values);
+            return new InterceptorsTable.InterceptorTableViewData
+            {
+                InterceptorEntity = x,
+                FriendlyName = interceptor.FriendlyName,
+                Subtitle = interceptor.Subtitle,
+                Type = interceptor is IRequestInterceptor ? InterceptorsTable.InterceptorTableViewData.InterceptorType.Request : InterceptorsTable.InterceptorTableViewData.InterceptorType.Response,
+            };
+        }));
+        _loading = false;
+    }
+
+    private async Task SetInterceptorState(InterceptorsTable.InterceptorTableViewData viewData, bool enabled)
+    {
+        var instance = InterceptorFactory.FromType(ServiceProvider, Type.GetType(viewData.InterceptorEntity.TypeName)!, viewData.InterceptorEntity.Values);
+        if (!instance.ValidateConfiguration())
+        {
+            Snackbar.Add("Interceptor configuration is invalid. Please click the edit button and configure the interceptor.", Severity.Error);
+            return;
+        }
+        
+        await InterceptorService.SetEnabledState(viewData.InterceptorEntity.Id, enabled);
+        await LoadData();
+    }
+    
+    private async Task ShowAddInterceptorDialog<T>() where T : IInterceptor
+    {
+        var parameters = new DialogParameters<AddInterceptorDialog>
+        {
+            { x => x.Type, typeof(T) },
+            { x => x.TunnelId, TunnelId },
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<AddInterceptorDialog>("Add interceptor", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled) await LoadData();
+    }
+    
+    private async Task ShowUpdateInterceptorDialog(InterceptorEntity interceptorEntity, string friendlyName)
+    {
+        var parameters = new DialogParameters<UpdateInterceptorDialog>
+        {
+            { x => x.Interceptor, interceptorEntity }
+        };
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<UpdateInterceptorDialog>(friendlyName, parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled) await LoadData();
+    }
+    
+    private async Task DeleteInterceptor(InterceptorEntity interceptor)
+    {
+        var parameters = new DialogParameters<GenericDialog>
+        {
+            { x => x.ContentText, "Are you sure you want to delete this interceptor?" },
+            { x => x.ButtonText, "Delete" },
+            { x => x.Color, Color.Error }
+        };
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+        var dialogReference = await DialogService.ShowAsync<GenericDialog>("Delete interceptor", parameters, options);
+        var result = await dialogReference.Result;
+        
+        if (result.Canceled) return;
+        
+        await InterceptorService.DeleteInterceptor(interceptor.Id);
+        await LoadData();
+    }
+}

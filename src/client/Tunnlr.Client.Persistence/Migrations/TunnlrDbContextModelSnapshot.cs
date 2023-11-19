@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tunnlr.Client.Persistence;
-using Tunnlr.Client.Web.Persistence;
 
 #nullable disable
 
@@ -18,7 +17,39 @@ namespace Tunnlr.Client.Web.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.13");
 
-            modelBuilder.Entity("Tunnlr.Client.Web.Persistence.Models.ReservedDomain", b =>
+            modelBuilder.Entity("Tunnlr.Client.Persistence.Models.InterceptorEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("TunnelIdRequestInterceptor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("TunnelIdResponseInterceptor")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TypeName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Values")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TunnelIdRequestInterceptor");
+
+                    b.HasIndex("TunnelIdResponseInterceptor");
+
+                    b.ToTable("Interceptors");
+                });
+
+            modelBuilder.Entity("Tunnlr.Client.Persistence.Models.ReservedDomain", b =>
                 {
                     b.Property<string>("Domain")
                         .HasColumnType("TEXT");
@@ -34,7 +65,7 @@ namespace Tunnlr.Client.Web.Persistence.Migrations
                     b.ToTable("ReservedDomains");
                 });
 
-            modelBuilder.Entity("Tunnlr.Client.Web.Persistence.Models.Tunnel", b =>
+            modelBuilder.Entity("Tunnlr.Client.Persistence.Models.Tunnel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -49,18 +80,33 @@ namespace Tunnlr.Client.Web.Persistence.Migrations
                     b.ToTable("Tunnels");
                 });
 
-            modelBuilder.Entity("Tunnlr.Client.Web.Persistence.Models.ReservedDomain", b =>
+            modelBuilder.Entity("Tunnlr.Client.Persistence.Models.InterceptorEntity", b =>
                 {
-                    b.HasOne("Tunnlr.Client.Web.Persistence.Models.Tunnel", "Tunnel")
+                    b.HasOne("Tunnlr.Client.Persistence.Models.Tunnel", null)
+                        .WithMany("RequestInterceptors")
+                        .HasForeignKey("TunnelIdRequestInterceptor");
+
+                    b.HasOne("Tunnlr.Client.Persistence.Models.Tunnel", null)
+                        .WithMany("ResponseInterceptors")
+                        .HasForeignKey("TunnelIdResponseInterceptor");
+                });
+
+            modelBuilder.Entity("Tunnlr.Client.Persistence.Models.ReservedDomain", b =>
+                {
+                    b.HasOne("Tunnlr.Client.Persistence.Models.Tunnel", "Tunnel")
                         .WithOne("ReservedDomain")
-                        .HasForeignKey("Tunnlr.Client.Web.Persistence.Models.ReservedDomain", "TunnelId");
+                        .HasForeignKey("Tunnlr.Client.Persistence.Models.ReservedDomain", "TunnelId");
 
                     b.Navigation("Tunnel");
                 });
 
-            modelBuilder.Entity("Tunnlr.Client.Web.Persistence.Models.Tunnel", b =>
+            modelBuilder.Entity("Tunnlr.Client.Persistence.Models.Tunnel", b =>
                 {
+                    b.Navigation("RequestInterceptors");
+
                     b.Navigation("ReservedDomain");
+
+                    b.Navigation("ResponseInterceptors");
                 });
 #pragma warning restore 612, 618
         }

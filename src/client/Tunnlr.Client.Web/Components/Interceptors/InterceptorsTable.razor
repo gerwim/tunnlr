@@ -1,0 +1,53 @@
+@using Tunnlr.Client.Persistence.Models
+
+@namespace Tunnlr.Client.Web.Components.Interceptors
+
+
+<MudTable Items="@ViewData" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@Loading" LoadingProgressColor="Color.Info">
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Actions</MudTh>
+    </HeaderContent>
+    <RowTemplate Context="interceptor">
+        <MudTd DataLabel="Type">
+            <MudContainer>
+                <MudText Color="Color.Primary">@interceptor.FriendlyName</MudText>
+                @if (!string.IsNullOrWhiteSpace(interceptor.Subtitle))
+                {
+                    <MudText Typo="Typo.subtitle2" Style="color: rgba(97, 97, 97, 0.6);">@interceptor.Subtitle</MudText>
+                }
+            </MudContainer>
+        </MudTd>
+        <MudTd DataLabel="Actions">
+            <MudSwitch Style="display: inline-flex" Checked="@interceptor.InterceptorEntity.Enabled" T="bool" CheckedChanged="(enabled) => SetInterceptorState(interceptor, enabled)" Color="Color.Success" UnCheckedColor="Color.Error" />
+            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                           OnClick="() => ShowUpdateInterceptorDialog(interceptor.InterceptorEntity, interceptor.FriendlyName)"
+                           aria-label="edit"/>
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           OnClick="() => DeleteInterceptor(interceptor.InterceptorEntity)"
+                           aria-label="delete"/>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    [Parameter] public required Func<InterceptorEntity, Task> DeleteInterceptor { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public required Func<InterceptorTableViewData, bool, Task> SetInterceptorState { get; set; }
+    [Parameter] public required Func<InterceptorEntity, string, Task> ShowUpdateInterceptorDialog { get; set; }
+    [Parameter] public required IEnumerable<InterceptorTableViewData> ViewData { get; set; }
+    
+    public record InterceptorTableViewData
+    {
+        public required InterceptorEntity InterceptorEntity { get; set; }
+        public required string FriendlyName { get; set; }
+        public string? Subtitle { get; set; }
+        public required InterceptorType Type { get; set; }
+
+        public enum InterceptorType
+        {
+            Request,
+            Response,
+        }
+    }
+}

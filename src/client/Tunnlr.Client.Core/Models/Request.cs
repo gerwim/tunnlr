@@ -1,9 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
+using Tunnlr.Client.Core.Contracts.Models;
 using Tunnlr.Common.Protobuf;
 
 namespace Tunnlr.Client.Core.Models;
 
-public class Request : RequestBase
+public class Request : RequestBase, IRequest
 {
     [SetsRequiredMembers]
     public Request(HttpRequest httpRequest)

@@ -1,0 +1,101 @@
+@using Tunnlr.Client.Persistence
+@using Microsoft.EntityFrameworkCore
+@using Tunnlr.Client.Features.Interceptors.Core
+@using Tunnlr.Client.Persistence.Models
+@using Tunnlr.Client.Web.Components.Dialogs.UpdateInterceptorDialog.Inputs
+
+@inject TunnlrClientDbContext ClientDbContext
+
+@namespace Tunnlr.Client.Web.Components.Dialogs.UpdateInterceptorDialog
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="Form" @bind-IsValid="@FormValid">
+            @foreach (var uiElement in UiElements)
+            {
+                <TextField
+                    UiElement="uiElement.Value"
+                    Update="(value) => UpdateValue(uiElement.Key, value)"
+                    Value="@UiElementValues[uiElement.Key]"/>
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    
+    [Parameter] public required InterceptorEntity Interceptor { get; set; }
+
+    public Dictionary<string, UiElement> UiElements { get; } = new();
+    public Dictionary<string, string> UiElementValues { get; } = new();
+    
+    private bool FormValid; 
+    private MudForm Form;
+
+    protected override Task OnInitializedAsync()
+    {
+        Clear();
+        
+        var properties = Type.GetType(Interceptor.TypeName)!.GetProperties();
+        
+        foreach (var property in properties)
+        {
+            var attributes = property.GetCustomAttributes(typeof(UiElement), false).Cast<UiElement>();
+            foreach (var uiElement in attributes)
+            {
+                UiElements.Add(property.Name, uiElement);
+                if (Interceptor.Values.TryGetValue(property.Name, out var value))
+                {
+                    UiElementValues.Add(property.Name, value);       
+                }
+            }
+        }
+        
+        return base.OnInitializedAsync();
+    }
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Form.Validate();
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+    
+    private void Clear()
+    {
+        UiElements.Clear();
+        UiElementValues.Clear();
+    }
+
+    private async Task Submit()
+    {
+        var interceptorEntity = await ClientDbContext.Interceptors.AsTracking().FirstOrDefaultAsync(x => x.Id == Interceptor.Id);
+        if (interceptorEntity is not null)
+        {
+            foreach (var uiElementValue in UiElementValues)
+            {
+                interceptorEntity.Values[uiElementValue.Key] = uiElementValue.Value;
+            }
+        
+            await ClientDbContext.SaveChangesAsync();
+        }
+        
+        
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+    
+    private void UpdateValue(string property, string value)
+    {
+        UiElementValues[property] = value;
+    }
+}

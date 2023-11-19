@@ -12,10 +12,13 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\Tunnlr.Common\Tunnlr.Common.csproj" />
+      <ProjectReference Include="..\features\Tunnlr.Client.Features.Interceptors.Core\Tunnlr.Client.Features.Interceptors.Core.csproj" />
+      <ProjectReference Include="..\Tunnlr.Client.Core.Contracts\Tunnlr.Client.Core.Contracts.csproj" />
       <ProjectReference Include="..\Tunnlr.Client.Utilities\Tunnlr.Client.Utilities.csproj" />
     </ItemGroup>
 

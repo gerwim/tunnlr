@@ -1,0 +1,80 @@
+@using Tunnlr.Client.Persistence
+@using Microsoft.EntityFrameworkCore
+@using Tunnlr.Client.Features.Interceptors.Core
+@using Tunnlr.Client.Persistence.Models
+@using Tunnlr.Common.DependencyInjection
+
+@inject TunnlrClientDbContext ClientDbContext
+@inject IServiceProvider ServiceProvider;
+
+@namespace Tunnlr.Client.Web.Components.Dialogs.AddInterceptorDialog
+
+<MudDialog>
+    <DialogContent>
+        <MudSelect Dense="true" T="string" Label="Interceptor" Variant="Variant.Text" ValueChanged="(interceptor) => SelectedInterceptor = Interceptors.First(x => x.GetType().FullName == interceptor)">
+            @foreach (var interceptor in Interceptors)
+            {
+                <MudSelectItem Value="@interceptor.GetType().FullName">@interceptor.FriendlyName</MudSelectItem>
+            }
+        </MudSelect>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Add</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; } = null!;
+    
+    [Parameter] public required Guid TunnelId { get; set; }
+    [Parameter] public required Type Type { get; set; }
+    public List<IInterceptor> Interceptors { get; set; } = new();
+    public IInterceptor? SelectedInterceptor { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        Interceptors.Clear();
+        
+        Interceptors.AddRange(GetAllIInterceptors());
+    
+        return base.OnInitializedAsync();
+    }
+
+    private IEnumerable<IInterceptor> GetAllIInterceptors()
+    {
+        var interceptors = AssemblyScanner.GetLoadedAssemblies()
+            .SelectMany(s => s.GetTypes())
+            .Where(p => Type.IsAssignableFrom(p) && p is { IsAbstract: false, IsInterface: false });
+
+
+        return interceptors.Select(x => (IInterceptor)ActivatorUtilities.CreateInstance(ServiceProvider, x));
+    }
+    async Task Submit()
+    {
+        var tunnel = ClientDbContext.Tunnels
+            .Include(x => x.RequestInterceptors)
+            .Include(x => x.ResponseInterceptors)
+            .AsTracking()
+            .FirstOrDefault(x => x.Id == TunnelId);
+
+        if (tunnel is null || SelectedInterceptor is null) return;
+        
+        var values = SelectedInterceptor.GetUiPropertiesWithValues();
+        if (SelectedInterceptor is IRequestInterceptor)
+        {
+            tunnel.RequestInterceptors.Add(new InterceptorEntity(SelectedInterceptor, values.ToDictionary(x => x.Key.propertyName, x => x.Value)));
+        }
+        
+        if (SelectedInterceptor is IResponseInterceptor)
+        {
+            tunnel.ResponseInterceptors.Add(new InterceptorEntity(SelectedInterceptor, values.ToDictionary(x => x.Key.propertyName, x => x.Value)));
+        }
+
+        await ClientDbContext.SaveChangesAsync();
+        
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}
