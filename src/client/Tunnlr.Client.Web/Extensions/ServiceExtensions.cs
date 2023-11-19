@@ -25,10 +25,11 @@ public static class ServiceExtensions
             }
         };
 
+        var appOptions = builder.Configuration.GetRequiredSection("Tunnlr:Client");
+
         var grpcClient = builder.Services.AddGrpcClient<T>(options =>
         {
-            options.Address = new Uri(builder.Configuration.GetRequiredSection("Tunnlr:Client")
-                                          .GetValue<string>("ApiServer") ??
+            options.Address = new Uri(appOptions.GetValue<string>("ApiServer") ??
                                       throw new InvalidConfigurationException(
                                           "Option value Tunnlr:Client:ApiServer is missing"));
             options.ChannelOptionsActions.Add(channelOptions =>
@@ -37,9 +38,7 @@ public static class ServiceExtensions
             });
         }).ConfigureChannel(options =>
         {
-#if DEBUG
-            options.UnsafeUseInsecureChannelCallCredentials = true;
-#endif
+            options.UnsafeUseInsecureChannelCallCredentials = appOptions.GetValue<bool>("UnsafeUseInsecureChannelCallCredentials");
         });
 
         if (withCredentials)
