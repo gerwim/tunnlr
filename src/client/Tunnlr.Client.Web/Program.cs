@@ -1,3 +1,4 @@
+using System.Net;
 using Auth0.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using MudBlazor.Services;
@@ -5,6 +6,7 @@ using Tunnlr.Client.Core.RequestPipeline;
 using Tunnlr.Client.Core.Services;
 using Tunnlr.Client.Web;
 using Tunnlr.Client.Web.Extensions;
+using Tunnlr.Client.Web.Helpers;
 using Tunnlr.Client.Web.Services;
 using Tunnlr.Common.DependencyInjection;
 using Tunnlr.Common.Exceptions;
@@ -12,6 +14,15 @@ using Tunnlr.Common.Options;
 using Tunnlr.Common.Protobuf;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.UseKestrel(options =>
+{
+    options.Listen(IPAddress.Any, 5109,
+        listenOptions =>
+        {
+            listenOptions.UseHttps(Certificate.GetSelfSignedCertificate());
+        });
+});
 
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
 
@@ -80,13 +91,7 @@ Configurators.RunAll(app);
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-var url = app.Configuration.GetRequiredSection("Kestrel:Endpoints:Web").GetValue<string>("Url");
-if (string.IsNullOrWhiteSpace(url))
-{
-    logger.LogError("Can't find url to listen on");
-    return;
-}
-
+var url = "https://127.0.0.1:5109";
 if (!app.Environment.IsDevelopment())
 {
     try
