@@ -1,16 +1,19 @@
 import { chromium, type FullConfig } from '@playwright/test';
+import { exec } from 'child_process';
 
 async function globalTeardown(config: FullConfig) {
-    const { exec } = require('child_process');
-    exec('docker compose down', (err, stdout, stderr) => {
-        if (err) {
-            // some err occurred
-            console.error(err);
-        } else {
-            // the *entire* stdout and stderr (buffered)
-            console.log(`stdout: ${stdout}`);
-            console.log(`stderr: ${stderr}`);
-        }
+    await dockerComposeDown();
+}
+
+async function dockerComposeDown() {
+    return new Promise((resolve, reject) => {
+        exec('docker compose down', (err, stdout, stderr) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(stdout);
+            }
+        });
     });
 }
 

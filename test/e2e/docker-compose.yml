@@ -1,7 +1,6 @@
 version: "3"
 services:
   tunnlr-client:
-    image: tunnlr-client
     build:
       context: ../../
       dockerfile: Dockerfile.Client
@@ -12,7 +11,6 @@ services:
      - Tunnlr__Client__ListenAddress=0.0.0.0
      - Tunnlr__Client__UnsafeUseInsecureChannelCallCredentials=true
   tunnlr-proxy:
-    image: tunnlr-proxy
     build:
       context: ../../
       dockerfile: Dockerfile.Proxy
