@@ -24,9 +24,18 @@ jobs:
         run: docker compose build
       - name: Run Playwright tests
         run: npx playwright test --trace on --browser all
+        env:
+          AUTH_USERNAME: ${{ secrets.AUTH_USERNAME }}
+          AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+      - name: Password protect Playwright traces
+        if: always()
+        shell: bash
+        env:
+          ZIP_PASSWORD: ${{ secrets.ZIP_PASSWORD }}
+        run: 7z a ./playwright-report.7z ./test/e2e/playwright-report/*.* -p"$ZIP_PASSWORD"
       - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: playwright-report
-          path: ./test/e2e/playwright-report/
+          path: ./playwright-report.7z
           retention-days: 30
