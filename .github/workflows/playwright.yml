@@ -32,7 +32,7 @@ jobs:
         shell: bash
         env:
           ZIP_PASSWORD: ${{ secrets.ZIP_PASSWORD }}
-        run: 7z a ./playwright-report.7z ./playwright-report/*.* -p"$ZIP_PASSWORD"
+        run: 7z a ./playwright-report.7z -r ./playwright-report -p"$ZIP_PASSWORD"
       - uses: actions/upload-artifact@v3
         if: always()
         with:
