@@ -101,7 +101,7 @@ public class RequestHandler
                         break;
                     }
                     case ServerMessage.DataOneofCase.CloseStream:
-                        internalCts.Cancel();
+                        await requestStream.RequestStream.CompleteAsync().ConfigureAwait(false);
                         break;
                 }
             }
