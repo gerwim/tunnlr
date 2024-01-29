@@ -400,3 +400,4 @@ FodyWeavers.xsd
 src/client/Tunnlr.Web/*.db*
 src/server/Tunnlr.Server.Proxy/*.db*
 src/Tunnlr.Client.Web/Tunnlr.Client.Web.db*
+test/e2e/.env

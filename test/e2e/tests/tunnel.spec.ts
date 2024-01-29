@@ -11,6 +11,6 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Start' }).click();
   await expect(page.getByRole('button', { name: 'Stop' })).toHaveCount(1);
   await page.getByRole('button', { name: 'Stop' }).first().click();
-  await page.getByRole('cell', { name: 'Start delete' }).getByLabel('delete').click();
+  await page.getByLabel('delete').click();
   await page.getByRole('button', { name: 'Delete', exact: true }).click();
 });

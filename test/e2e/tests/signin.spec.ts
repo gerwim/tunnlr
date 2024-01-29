@@ -9,6 +9,7 @@ test('test', async ({ page }) => {
   await page.getByLabel('Password').click();
   await page.getByLabel('Password').fill(process.env.AUTH_PASSWORD);
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByText('Continue without passkeys', { exact: true }).click();
   await page.getByText('t', { exact: true }).click();
   await page.getByText('Logout').click();
 });
