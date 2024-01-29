@@ -38,8 +38,8 @@ public class RequestHandler
         CancellationToken cancellationToken,
         CreateTunnelStreamResponse response)
     {
-        var internalCts = new CancellationTokenSource();
-        var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, internalCts.Token);
+        using var internalCts = new CancellationTokenSource();
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, internalCts.Token);
         
         try
         {
