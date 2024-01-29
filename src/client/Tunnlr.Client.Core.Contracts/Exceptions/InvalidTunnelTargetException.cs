@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Tunnlr.Client.Core.Exceptions;
+namespace Tunnlr.Client.Core.Contracts.Exceptions;
 
 [Serializable]
 public class InvalidTunnelTargetException : Exception

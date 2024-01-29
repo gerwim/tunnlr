@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Tunnlr.Client.Core.Contracts\Tunnlr.Client.Core.Contracts.csproj" />
+      <ProjectReference Include="..\..\Tunnlr.Client.Persistence\Tunnlr.Client.Persistence.csproj" />
+      <ProjectReference Include="..\Tunnlr.Client.Features.Interceptors.Core\Tunnlr.Client.Features.Interceptors.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Tunnlr.Client.Core.Contracts\Tunnlr.Client.Core.Contracts.csproj" />
+    </ItemGroup>
+
+</Project>

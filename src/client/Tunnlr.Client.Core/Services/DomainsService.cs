@@ -1,6 +1,5 @@
 using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Tunnlr.Client.Core.Models;
 using Tunnlr.Client.Persistence;
 using Tunnlr.Common.Protobuf;

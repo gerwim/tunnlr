@@ -23,12 +23,15 @@
             <MudTh>Actions</MudTh>
         </HeaderContent>
         <RowTemplate>
+            @{
+                var badgeCount = context.RequestInterceptors.Count(x => x.Enabled) + context.ResponseInterceptors.Count(x => x.Enabled);
+            }
             <MudTd DataLabel="Target URI">@context.TargetUri
                 @if (context.ReservedDomain is not null)
                 {
-                    <MudIconButton Icon="@Icons.Material.Filled.Language" Style="opacity: 0.5" Href="/reserved-domains" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Language" Style="opacity: 0.5" Href="/reserved-domains"/>
                 }
-                </MudTd>
+            </MudTd>
             <MudTd DataLabel="Served from"><MudLink Href="@context.ServedFrom" Target="_blank">@context.ServedFrom</MudLink></MudTd>
             <MudTd DataLabel="Requests"><MudLink Href="@($"/tunnels/{context.TunnelId}/requests")">@context.Requests.Count</MudLink></MudTd>
             <MudTd DataLabel="Actions">
@@ -36,10 +39,14 @@
                                      ToggledChanged="() => StartOrStopTunnel(context)"
                                      Icon="@Icons.Material.Filled.Start" Color="@Color.Success" Title="Start"
                                      ToggledIcon="@Icons.Material.Filled.Stop" ToggledColor="@Color.Error" ToggledTitle="Stop"/>
-                
+                <MudBadge Content="@badgeCount" Overlap="true" Visible="@(badgeCount > 0)">
+                    <MudIconButton Href="@($"tunnels/{context.TunnelId}/interceptors")"
+                                   Icon="@Icons.Material.Filled.AltRoute"
+                                   aria-label="interceptors"/>
+                </MudBadge>
                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                OnClick="() => DeleteTunnel(context)"
-                               aria-label="delete" />
+                               aria-label="delete"/>
             </MudTd>
         </RowTemplate>
     </MudTable>
@@ -77,7 +84,11 @@
 
     private void LoadData()
     {
-        _tunnels = ClientDbContext.Tunnels.Include(x => x.ReservedDomain).ToList().Select(x =>
+        _tunnels = ClientDbContext.Tunnels
+            .Include(x => x.RequestInterceptors)
+            .Include(x => x.ResponseInterceptors)
+            .Include(x => x.ReservedDomain)
+            .ToList().Select(x =>
         {
             var activeTunnel = TunnelService.ActiveTunnels.FirstOrDefault(tunnel => tunnel.Key == x.Id).Value;
 
@@ -98,6 +109,8 @@
                             Domain = x.ReservedDomain.Domain,
                         } 
                     : null,
+                ResponseInterceptors = x.ResponseInterceptors.ToList(),
+                RequestInterceptors = x.RequestInterceptors.ToList()
             };
         }).ToList();
 

@@ -3,7 +3,7 @@ using AsyncAwaitBestPractices;
 using Grpc.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Tunnlr.Client.Core.Exceptions;
+using Tunnlr.Client.Core.Contracts.Exceptions;
 using Tunnlr.Client.Core.Handlers;
 using Tunnlr.Client.Core.Models;
 using Tunnlr.Client.Persistence;

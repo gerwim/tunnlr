@@ -2,10 +2,12 @@ using AsyncAwaitBestPractices;
 using Google.Protobuf;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
-using Tunnlr.Client.Core.Exceptions;
+using Tunnlr.Client.Core.Contracts.Exceptions;
 using Tunnlr.Client.Core.Formatters;
 using Tunnlr.Client.Core.Models;
 using Tunnlr.Client.Core.Services;
+using Tunnlr.Client.Features.Interceptors;
+using Tunnlr.Client.Features.Interceptors.Core;
 using Tunnlr.Common.Protobuf;
 using Tunnlr.Common.Streams;
 
@@ -62,8 +64,15 @@ public class RequestHandler
                     case ServerMessage.DataOneofCase.HttpRequest:
                     {
                         var result = requestStreamResponse.HttpRequest;
-
                         Request = new Request(result);
+                        
+                        // Execute request interceptors
+                        foreach (var tunnelRequestInterceptor in tunnel.RequestInterceptors.Where(x => x.Enabled))
+                        {
+                            var type = Type.GetType(tunnelRequestInterceptor.TypeName);
+                            var interceptor =  (IRequestInterceptor) InterceptorFactory.FromType(_serviceProvider, type!, tunnelRequestInterceptor.Values);
+                            await interceptor.InvokeAsync(Request).ConfigureAwait(false);
+                        }
                         
                         tunnel.Requests.TryAdd(Request, null);
                        
@@ -92,7 +101,7 @@ public class RequestHandler
                         break;
                     }
                     case ServerMessage.DataOneofCase.CloseStream:
-                        internalCts.Cancel();
+                        await requestStream.RequestStream.CompleteAsync().ConfigureAwait(false);
                         break;
                 }
             }
@@ -108,16 +117,24 @@ public class RequestHandler
         AsyncDuplexStreamingCall<ClientMessage, ServerMessage> requestStream)
     {
         var httpResponse = await httpTask.ConfigureAwait(false);
+
+        if (httpResponse.Response is null || httpResponse.Stream is null) throw new OutgoingRequestException("Cancel outgoing request: there is neither a response or a stream");
+        var response = new Response(httpResponse.Response);
+        
+        // Execute response interceptors
+        foreach (var tunnelResponseInterceptor in tunnel.ResponseInterceptors.Where(x => x.Enabled))
+        {
+            var type = Type.GetType(tunnelResponseInterceptor.TypeName);
+            // TODO: check for nullability
+            var interceptor =  (IResponseInterceptor) InterceptorFactory.FromType(_serviceProvider, type!, tunnelResponseInterceptor.Values);
+            await interceptor.InvokeAsync(response).ConfigureAwait(false);
+        }
         
         await requestStream.RequestStream.WriteAsync(new ClientMessage
         {
-            HttpResponse = httpResponse.Response
+            HttpResponse = response.HttpResponse
         }, cancellationToken).ConfigureAwait(false);
-
-        if (httpResponse.Response is null || httpResponse.Stream is null) throw new OutgoingRequestException("Cancel outgoing request: there is neither a response or a stream");
-
-        var response = new Response(httpResponse.Response);
-
+        
         // Write the response stream back into the buffer and stream it back to the server
         int bytesRead;
         var buffer = new byte[64 * 1024];

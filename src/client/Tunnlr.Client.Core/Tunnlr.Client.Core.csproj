@@ -8,6 +8,8 @@
     
     <ItemGroup>
       <ProjectReference Include="..\..\Tunnlr.Common\Tunnlr.Common.csproj" />
+      <ProjectReference Include="..\features\Tunnlr.Client.Features.Interceptors\Tunnlr.Client.Features.Interceptors.csproj" />
+      <ProjectReference Include="..\Tunnlr.Client.Core.Contracts\Tunnlr.Client.Core.Contracts.csproj" />
       <ProjectReference Include="..\Tunnlr.Client.Persistence\Tunnlr.Client.Persistence.csproj" />
     </ItemGroup>
     

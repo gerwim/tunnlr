@@ -12,4 +12,10 @@ public class Tunnel
     public required string TargetUri { get; set; }
 
     public ReservedDomain? ReservedDomain { get; set; }
+
+    [ForeignKey("TunnelIdRequestInterceptor")]
+    public ICollection<InterceptorEntity> RequestInterceptors { get; protected set; } = new List<InterceptorEntity>();
+
+    [ForeignKey("TunnelIdResponseInterceptor")]
+    public ICollection<InterceptorEntity> ResponseInterceptors { get; protected set; } = new List<InterceptorEntity>();
 }

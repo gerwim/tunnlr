@@ -1,7 +1,5 @@
 using System.Text;
-using Microsoft.Extensions.DependencyInjection;
 using Tunnlr.Client.Core.Models;
-using Tunnlr.Client.Core.RequestPipeline.Core;
 using Tunnlr.Common.Exceptions;
 using Tunnlr.Common.Protobuf;
 using HttpMethod = Tunnlr.Common.Protobuf.HttpMethod;
@@ -55,11 +53,6 @@ public static class Http
                     requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
                 }
             }
-            
-            // Execute request middleware
-            using var scope = serviceProvider.CreateScope();
-            var executor = scope.ServiceProvider.GetRequiredService<IRequestPipelineExecutor>();
-            await executor.ExecuteAsync(requestMessage).ConfigureAwait(false);
 
             var result = await HttpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
