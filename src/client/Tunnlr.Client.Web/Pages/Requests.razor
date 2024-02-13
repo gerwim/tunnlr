@@ -2,6 +2,7 @@
 @using Tunnlr.Client.Core.Models
 @using Tunnlr.Client.Core.Services
 @using Tunnlr.Client.Core.Helpers
+@using Microsoft.AspNetCore.WebUtilities
 @implements IDisposable
 
 <PageTitle>Tunnlr</PageTitle>
@@ -33,23 +34,28 @@
                 @foreach (var tunnelHttpRequest in Tunnel.Requests.ToArray().OrderByDescending(x => x.Key.DateTime))
                 {
                     <MudListItem @key="tunnelHttpRequest.Key.HttpRequest.Id" Value="tunnelHttpRequest.Key">
-                        <MudContainer Class="d-flex justify-space-between">
-                            <MudContainer>
+                        <MudGrid>
+                            <MudItem xs="10">
                                 <MudText Color="Color.Primary">@tunnelHttpRequest.Key.Title</MudText>
                                 @if (!string.IsNullOrWhiteSpace(tunnelHttpRequest.Key.SubTitle))
                                 {
                                     <MudText Typo="Typo.subtitle2" Style="color: rgba(97, 97, 97, 0.6);">@tunnelHttpRequest.Key.SubTitle</MudText>
                                 }
-                            </MudContainer>
+                            </MudItem>
+                            <MudItem xs="2">
                             @if (tunnelHttpRequest.Value is null)
                             {
                                 <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true"/>
                             }
                             else
-                            {
-                                <MudText Color="Color.Secondary">@($"{Helpers.RequestDurationFormatter.FormatRequestDuration(tunnelHttpRequest.Key.DateTime, tunnelHttpRequest.Value.DateTime)}")</MudText>
+                            { 
+                                var color = tunnelHttpRequest.Value.HttpResponse.StatusCode is >= 200 and <= 299 ? Color.Success : Color.Error;
+                                
+                                <MudText Color="@color">@tunnelHttpRequest.Value.HttpResponse.StatusCode - @ReasonPhrases.GetReasonPhrase(tunnelHttpRequest.Value.HttpResponse.StatusCode)</MudText>
+                                <MudText Color="@color">@($"{Helpers.RequestDurationFormatter.FormatRequestDuration(tunnelHttpRequest.Key.DateTime, tunnelHttpRequest.Value.DateTime)}")</MudText>
                             }
-                        </MudContainer>
+                            </MudItem>
+                        </MudGrid>
                     </MudListItem>
                 }
             </MudList>
