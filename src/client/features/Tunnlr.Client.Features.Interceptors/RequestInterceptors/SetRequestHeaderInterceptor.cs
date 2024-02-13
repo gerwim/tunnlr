@@ -8,10 +8,10 @@ public class SetRequestHeaderInterceptor : IRequestInterceptor
     public string FriendlyName => "Set request header";
     public string Subtitle => $"Header name: {HeaderName}";
 
-    [UiElement(DisplayName = "Header name", ElementType = UiElementTypes.TextInput, ValidationRegex = ValidationConstants.HeaderNameRegex)]
+    [InterceptorProperty(DisplayName = "Header name", PropertyType = PropertyType.Text, ValidationRegex = ValidationConstants.HeaderNameRegex)]
     public string HeaderName { get; set; } = string.Empty;
     
-    [UiElement(DisplayName = "Header value", ElementType = UiElementTypes.TextInput, ValidationRegex = ValidationConstants.HeaderValueRegex)]
+    [InterceptorProperty(DisplayName = "Header value", PropertyType = PropertyType.Text, ValidationRegex = ValidationConstants.HeaderValueRegex)]
     public string HeaderValue { get; set; } = string.Empty;
     
     public Task InvokeAsync(IRequest request)

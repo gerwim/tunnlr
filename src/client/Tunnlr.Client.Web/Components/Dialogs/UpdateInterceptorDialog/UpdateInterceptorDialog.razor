@@ -14,7 +14,7 @@
             @foreach (var uiElement in UiElements)
             {
                 <TextField
-                    UiElement="uiElement.Value"
+                    InterceptorProperty="uiElement.Value"
                     Update="(value) => UpdateValue(uiElement.Key, value)"
                     Value="@UiElementValues[uiElement.Key]"/>
             }
@@ -31,7 +31,7 @@
     
     [Parameter] public required InterceptorEntity Interceptor { get; set; }
 
-    public Dictionary<string, UiElement> UiElements { get; } = new();
+    public Dictionary<string, InterceptorProperty> UiElements { get; } = new();
     public Dictionary<string, string> UiElementValues { get; } = new();
     
     private bool FormValid; 
@@ -45,7 +45,7 @@
         
         foreach (var property in properties)
         {
-            var attributes = property.GetCustomAttributes(typeof(UiElement), false).Cast<UiElement>();
+            var attributes = property.GetCustomAttributes(typeof(InterceptorProperty), false).Cast<InterceptorProperty>();
             foreach (var uiElement in attributes)
             {
                 UiElements.Add(property.Name, uiElement);

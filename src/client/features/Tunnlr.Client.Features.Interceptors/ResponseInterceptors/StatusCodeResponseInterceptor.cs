@@ -16,7 +16,7 @@ public class StatusCodeResponseInterceptor : IResponseInterceptor
     public string FriendlyName => "Set response status code";
     public string Subtitle => $"Statuscode: {Statuscode}";
 
-    [UiElement(DisplayName = "Statuscode", ElementType = UiElementTypes.NumbersInput, ValidationRegex = ValidationConstants.StatusCodeRegex)]
+    [InterceptorProperty(DisplayName = "Statuscode", PropertyType = PropertyType.Numbers, ValidationRegex = ValidationConstants.StatusCodeRegex)]
     public string Statuscode { get; set; } = string.Empty;
 
     public Task InvokeAsync(IResponse response)

@@ -4,36 +4,36 @@
 @namespace Tunnlr.Client.Web.Components.Dialogs.UpdateInterceptorDialog.Inputs
 
 <MudTextField 
-    Label="@UiElement.DisplayName"
+    Label="@InterceptorProperty.DisplayName"
     Value="Value"
     TextChanged="Update"
-    InputType="GetInputType(UiElement)"
+    InputType="GetInputType(InterceptorProperty)"
     Validation="@(new Func<string, IEnumerable<string>>(Validate))"
 />
 
 @code {
-    [Parameter] public required UiElement UiElement { get; set; }
+    [Parameter] public required InterceptorProperty InterceptorProperty { get; set; }
     [Parameter] public required EventCallback<string> Update { get; set; }
     [Parameter] public required string Value { get; set; }
     
         
-    private InputType GetInputType(UiElement uiElement)
+    private InputType GetInputType(InterceptorProperty interceptorProperty)
     {
-        return uiElement.ElementType switch
+        return interceptorProperty.PropertyType switch
         {
-            UiElementTypes.NumbersInput => InputType.Number,
+            PropertyType.Numbers => InputType.Number,
             _ => InputType.Text
         };
     }
     
     private IEnumerable<string?> Validate(string value)
     {
-        if (string.IsNullOrWhiteSpace(UiElement.ValidationRegex)) yield break;
+        if (string.IsNullOrWhiteSpace(InterceptorProperty.ValidationRegex)) yield break;
         
-        var regex = new Regex(UiElement.ValidationRegex);
+        var regex = new Regex(InterceptorProperty.ValidationRegex);
         if (!regex.Match(value).Success)
         {
-            yield return $"{UiElement.DisplayName} is invalid";
+            yield return $"{InterceptorProperty.DisplayName} is invalid";
         }
 
         yield return null;

@@ -8,7 +8,7 @@ public class RemoveRequestHeaderInterceptor : IRequestInterceptor
     public string FriendlyName => "Remove request header";
     public string Subtitle => $"Header name: {HeaderName}";
 
-    [UiElement(DisplayName = "Header name", ElementType = UiElementTypes.TextInput, ValidationRegex = ValidationConstants.HeaderNameRegex)]
+    [InterceptorProperty(DisplayName = "Header name", PropertyType = PropertyType.Text, ValidationRegex = ValidationConstants.HeaderNameRegex)]
     public string HeaderName { get; set; } = string.Empty;
     
     public Task InvokeAsync(IRequest request)
